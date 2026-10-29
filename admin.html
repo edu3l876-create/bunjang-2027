@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>업무분장 희망원 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="print.js"></script>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#1d2321;--muted:#5f6b66;--line:#d6dcd9;--accent:#1f6f5c;--soft:#e3f1ec;--warn:#a4421f;--warnsoft:#fbeee8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:15px}
+header{background:var(--accent);color:#fff;padding:18px 16px}
+header h1{margin:0;font-size:19px}
+main{max-width:1100px;margin:0 auto;padding:14px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:16px}
+input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px}
+.btn{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wrap{overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+table.t th{background:#eef2f0}
+table.t td.l{text-align:left}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi div{background:var(--soft);color:var(--accent);border-radius:10px;padding:10px 14px;font-weight:700}
+.kpi span{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.status{font-size:14px;margin-top:8px;padding:9px 12px;border-radius:8px}
+.status.bad{background:var(--warnsoft);color:var(--warn)}
+.status.ok{background:var(--soft);color:var(--accent)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:800px){.three{grid-template-columns:1fr}}
+#printArea{display:none}
+@media print{
+  body{background:#fff}
+  header,main{display:none!important}
+  #printArea{display:block!important}
+}
+</style>
+</head>
+<body>
+<header><h1>2027학년도 담임 및 교무분장 희망원 — 관리자</h1></header>
+<main>
+  <section class="card" id="loginCard">
+    <h2>관리자 확인</h2>
+    <div class="row"><input id="key" type="password" placeholder="관리자 비밀번호"><button class="btn primary" id="loginBtn">불러오기</button></div>
+    <div id="loginMsg"></div>
+  </section>
+
+  <section id="dash" style="display:none">
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="kpi" id="kpi"></div>
+        <div class="row">
+          <button class="btn" id="reloadBtn">새로고침</button>
+          <button class="btn primary" id="printAll">전체 출력</button>
+          <button class="btn primary" id="printSel">선택 출력</button>
+        </div>
+      </div>
+      <p style="font-size:13px;color:#5f6b66;margin:8px 0 0">출력은 1인당 2쪽(희망원 + 개인정보 동의서)입니다. 인쇄 창에서 "머리글과 바닥글"을 끄세요.</p>
+    </section>
+
+    <section class="card">
+      <h2>제출 목록</h2>
+      <div class="wrap"><table class="t" id="list"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>희망 현황 (1·2·3지망 인원)</h2>
+      <div class="three">
+        <div class="wrap"><table class="t" id="sumHead"></table></div>
+        <div class="wrap"><table class="t" id="sumHR"></table></div>
+        <div class="wrap"><table class="t" id="sumNon"></table></div>
+      </div>
+    </section>
+
+    <section class="card" id="missingCard">
+      <h2>미제출자</h2>
+      <div id="missing"></div>
+    </section>
+  </section>
+</main>
+<div id="printArea"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiAeD4u9m-DklOn8VTgTx5YU3eJv7KtFwqWRSCLkf6gowvMTONG8jiT5IVZRAbFLV3/exec";   // index.html과 같은 Apps Script 웹앱 주소
+const $=id=>document.getElementById(id);
+let ROWS=[], CFG=DEFAULT_CONFIG;
+
+async function call(body){
+  const r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
+  const j=await r.json(); if(!j.ok) throw new Error(j.error||"오류"); return j;
+}
+async function loadAll(){
+  const m=$("loginMsg");
+  if(!SCRIPT_URL){ m.innerHTML=`<div class="status bad">SCRIPT_URL이 설정되지 않았습니다.</div>`; return; }
+  m.innerHTML=`<div class="status ok">불러오는 중…</div>`;
+  try{
+    const j=await call({action:"list",key:$("key").value});
+    ROWS=j.rows||[]; if(j.config&&j.config.depts&&j.config.depts.length) CFG=j.config;
+    try{ sessionStorage.setItem("bjkey",$("key").value); }catch(e){}
+    $("loginCard").style.display="none"; $("dash").style.display="";
+    render();
+  }catch(e){ m.innerHTML=`<div class="status bad">${esc(e.message)}</div>`; }
+}
+$("loginBtn").onclick=loadAll; $("key").addEventListener("keydown",e=>{ if(e.key==="Enter") loadAll(); });
+$("reloadBtn").onclick=loadAll;
+
+function count(field, list, getter){
+  return list.map(name=>{ const c=[0,0,0]; ROWS.forEach(d=>{ const arr=getter(d)||[]; arr.forEach((v,i)=>{ if(v===name&&i<3) c[i]++; }); }); return [name,...c]; });
+}
+function sumTable(title, rows){
+  return `<tr><th>${title}</th><th>1지망</th><th>2지망</th><th>3지망</th></tr>`+rows.map(r=>`<tr><td class="l">${esc(r[0])}</td><td>${r[1]||""}</td><td>${r[2]||""}</td><td>${r[3]||""}</td></tr>`).join("");
+}
+function render(){
+  ROWS.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
+  const nO=k=>ROWS.filter(d=>d[k]==="O").length;
+  $("kpi").innerHTML=`<div>${ROWS.length}<span>제출</span></div><div>${nO("wantHead")}<span>부장 희망</span></div><div>${nO("wantHR")}<span>담임 희망</span></div><div>${nO("wantNon")}<span>비담임 희망</span></div><div>${ROWS.filter(d=>d.consent!=="동의").length}<span>개인정보 미동의</span></div>`;
+  $("list").innerHTML=`<tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>부장</th><th>부장 1지망</th><th>담임</th><th>담임 1지망</th><th>비담임</th><th>비담임 1지망</th><th>제출일시</th><th></th></tr>`+
+    ROWS.map((d,i)=>`<tr><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${esc(d.wantHead)}</td><td>${esc((d.headPicks||[])[0]||"")}</td><td>${esc(d.wantHR)}</td><td>${esc((d.hrPicks||[])[0]||"")}</td><td>${esc(d.wantNon)}</td><td>${esc(((d.nonPicks||[])[0]||{}).dept?((d.nonPicks[0].dept)+" – "+(d.nonPicks[0].task||"")):"")}</td><td>${d.submittedAt?new Date(d.submittedAt).toLocaleString("ko-KR"):""}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`).join("");
+  $("all").onchange=e=>document.querySelectorAll(".sel").forEach(c=>c.checked=e.target.checked);
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>doPrint([ROWS[+b.dataset.p]]));
+  $("sumHead").innerHTML=sumTable("부장 희망 부서",count("h",CFG.depts.map(d=>d.name),d=>d.wantHead==="O"?d.headPicks:[]));
+  $("sumHR").innerHTML=sumTable("담임 희망 학년",count("g",CFG.grades,d=>d.wantHR==="O"?d.hrPicks:[]));
+  const nonKeys=[]; CFG.depts.forEach(dp=>(dp.tasks||[]).forEach(t=>nonKeys.push(dp.name+" – "+t)));
+  $("sumNon").innerHTML=sumTable("비담임 희망 업무",count("n",nonKeys,d=>d.wantNon==="O"?(d.nonPicks||[]).map(p=>p.dept+" – "+p.task):[]));
+  const T=(CFG.teachers||[]).filter(Boolean);
+  if(!T.length){ $("missing").innerHTML=`<p style="font-size:13px;color:#5f6b66">시트 "설정" 탭의 교사명단(D열)을 채우면 미제출자가 표시됩니다.</p>`; }
+  else { const sub=new Set(ROWS.map(d=>String(d.name).trim())); const miss=T.filter(n=>!sub.has(String(n).trim()));
+    $("missing").innerHTML = miss.length ? `<p>${miss.length}명: ${miss.map(esc).join(", ")}</p>` : `<p>모두 제출했습니다.</p>`; }
+}
+function doPrint(list){
+  if(!list.length){ alert("출력할 대상을 선택하세요."); return; }
+  injectPrintCss(); $("printArea").innerHTML=list.map(renderForm).join(""); window.print();
+}
+$("printAll").onclick=()=>doPrint(ROWS);
+$("printSel").onclick=()=>doPrint([...document.querySelectorAll(".sel:checked")].map(c=>ROWS[+c.dataset.i]));
+
+try{ const k=sessionStorage.getItem("bjkey"); if(k){ $("key").value=k; loadAll(); } }catch(e){}
+</script>
+</body>
+</html>

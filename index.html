@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>업무분장 희망원</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="print.js"></script>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#1d2321;--muted:#5f6b66;--line:#d6dcd9;--accent:#1f6f5c;--soft:#e3f1ec;--warn:#a4421f;--warnsoft:#fbeee8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+header{background:var(--accent);color:#fff;padding:20px 16px}
+header h1{margin:0;font-size:19px}
+header p{margin:4px 0 0;font-size:13px;opacity:.9}
+main{max-width:720px;margin:0 auto;padding:14px 16px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.full{grid-column:1/-1}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+input,select,textarea{font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.ox{display:flex;gap:8px;margin:2px 0 10px}
+.ox button{flex:1;line-height:1.3;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;font-size:16px;cursor:pointer}
+.ox button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.q{font-weight:700;font-size:15px;margin:14px 0 4px}
+.q:first-child{margin-top:0}
+.picks{display:grid;gap:8px}
+.pickrow{display:grid;grid-template-columns:56px 1fr 1fr;gap:6px;align-items:center}
+.pickrow.one{grid-template-columns:56px 1fr}
+.pickrow span{font-size:14px;color:var(--muted)}
+.headrow{display:grid;grid-template-columns:1fr 92px 40px;gap:6px;align-items:center;margin-bottom:6px}
+.btn{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:10px 14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;width:100%;padding:14px;font-size:17px}
+.btn.ghost{color:var(--accent);border-color:var(--accent)}
+.btn.x{padding:8px;color:var(--warn);border-color:transparent;background:none}
+.status{font-size:14px;margin-top:10px;padding:10px 12px;border-radius:8px}
+.status.ok{background:var(--soft);color:var(--accent)}
+.status.bad{background:var(--warnsoft);color:var(--warn)}
+.chk{display:flex;gap:8px;align-items:center;font-size:15px}
+.chk input{width:auto;transform:scale(1.2)}
+.consent{font-size:13.5px;line-height:1.6;background:#f7f8f7;border-radius:8px;padding:10px 12px}
+.consent table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
+.consent td{border:1px solid #bbb;padding:5px 6px}
+.hide{display:none!important}
+#preview{overflow-x:auto}
+#preview .pf{transform-origin:top left}
+</style>
+</head>
+<body>
+<header>
+  <h1>2027학년도 담임 및 교무분장 희망원</h1>
+  <p>옥빛중학교 · 빈칸 없이 모두 작성해 주세요. 업무는 배부된 업무분장표를 보고 선택합니다.</p>
+</header>
+<main>
+
+<section class="card">
+  <h2>1. 교사 구분</h2>
+  <div class="ox" data-ox="staff"><button data-v="본교">본교<br>재직교사</button><button data-v="전입">전입교사</button><button data-v="신규">신규교사</button></div>
+  <p class="note">※ 2026학년도에 우리 학교에서 근무했으면 '본교 재직교사', 다른 학교에서 옮겨 오셨으면 '전입교사', 처음 발령받으셨으면 '신규교사'를 선택하세요.</p>
+</section>
+
+<section class="card">
+  <h2>2. 인적 사항</h2>
+  <div class="grid">
+    <label class="f">성명<input id="name" autocomplete="name"></label>
+    <label class="f">생년월일<input id="birth" type="date"></label>
+    <label class="f">소지자격<input id="license" placeholder="예: 중등2급정교사(국어)"></label>
+    <label class="f">발령교과<input id="subject" placeholder="예: 국어"></label>
+    <label class="f full">주소<input id="address" autocomplete="street-address"></label>
+    <label class="f">휴대폰번호<input id="phone" type="tel" inputmode="numeric" placeholder="010-0000-0000"></label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>3. 경력</h2>
+  <div class="grid">
+    <label class="f">교육 경력 (합계)<input id="careerYears" type="number" min="0" step="1" inputmode="numeric" placeholder="년 (신규교사는 0)"></label>
+    <label class="f">본교 발령일<input id="arrivalDate" type="date"></label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>4. 주요 경력</h2>
+  <div class="q">보직(부장) 경력 <span class="note">(최대 3개)</span></div>
+  <div id="heads"></div>
+  <button class="btn ghost" id="addHead">+ 부장 경력 추가</button>
+  <p class="note">※ 이전 학교의 부서명이 목록과 다르면, 가장 비슷한 부장명을 선택하세요. 부장 경력이 없으면 비워 두세요.</p>
+  <div class="q">담임 경력</div>
+  <div class="grid">
+    <label class="f">중학교 (년)<input id="hrMid" type="number" min="0" step="1" inputmode="numeric" placeholder="없으면 0"></label>
+    <label class="f">고등학교 (년)<input id="hrHigh" type="number" min="0" step="1" inputmode="numeric" placeholder="없으면 0"></label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>5. 2026학년도 담당업무</h2>
+  <p class="note" id="staffNeed" style="margin:0">※ 1번에서 교사 구분을 먼저 선택하세요.</p>
+  <div id="curWrap" class="grid hide">
+    <label class="f full">본교 담당업무<input id="cur" placeholder="예: 2학년부 담임 / 교무기획부 성적"></label>
+  </div>
+  <div id="transferWrap" class="grid hide">
+    <p class="note full" style="margin:0">전임교에서의 보직 및 담당업무를 입력하세요.</p>
+    <label class="f">전임교<input id="tSchool"></label>
+    <label class="f">보직<input id="tPost" placeholder="없으면 없음"></label>
+    <label class="f">담당학년<input id="tGrade"></label>
+    <label class="f">담당업무<input id="tTask"></label>
+  </div>
+  <p class="note hide" id="newbieNote" style="margin:0">신규교사는 입력하지 않습니다.</p>
+</section>
+
+<section class="card">
+  <h2>6. 2027학년도 희망 업무</h2>
+  <div class="q">부장 희망 여부</div>
+  <div class="ox" data-ox="wantHead"><button data-v="O">○ 희망</button><button data-v="X">X 비희망</button></div>
+  <div id="headPicks" class="picks hide"></div>
+
+  <div class="q">담임 희망 여부</div>
+  <div class="ox" data-ox="wantHR"><button data-v="O">○ 희망</button><button data-v="X">X 비희망</button></div>
+  <div id="hrPicks" class="picks hide"></div>
+
+  <div class="q">비담임 희망 여부</div>
+  <div class="ox" data-ox="wantNon"><button data-v="O">○ 희망</button><button data-v="X">X 비희망</button></div>
+  <div id="nonPicks" class="picks hide"></div>
+  <p class="note">※ 1, 2, 3지망은 서로 다른 부서(학년)로 선택합니다. 업무는 배부된 업무분장표를 보고 선택하세요.</p>
+</section>
+
+<section class="card">
+  <h2>7. 희망 사유 및 참고사항</h2>
+  <textarea id="reason" style="min-height:120px" placeholder="예) 2학년 담임 경험이 있어 학년 운영에 도움이 될 수 있습니다. / 성적 업무를 2년간 맡아 업무에 익숙합니다. / 비담임을 희망하는 개인 사정이 있습니다."></textarea>
+  <p class="note">희망한 업무를 맡고자 하는 이유와 관련 경험·역량을 적어 주세요. <b>비담임을 희망하는 경우 그 사유를 구체적으로</b> 적어 주세요. 업무 배정 시 고려가 필요한 사항이 있으면 함께 적어 주세요.</p>
+</section>
+
+<section class="card">
+  <h2>8. 개인정보 수집·이용 동의</h2>
+  <div class="consent">
+    「개인정보 보호법」에 따라 학교 업무에 도움을 받고자, 아래와 같이 개인정보 수집·이용·제공 동의를 받고자 합니다.
+    <table>
+      <tr><td><b>수집·이용 목적</b></td><td>학교업무 (담임 및 교무분장 배정)</td></tr>
+      <tr><td><b>수집범위</b></td><td>필수정보: 성명, 생년월일, 주소, 연락처<br>부가정보: 소지자격, 발령교과, 교육경력, 본교 발령일, 주요경력(보직·담임), 담당업무, 희망 부서·학년 및 사유</td></tr>
+      <tr><td><b>보유·이용기간</b></td><td>1년 (기간 경과 후 파기)</td></tr>
+    </table>
+    ◦ 본인은 개인정보 수집에 대한 동의를 거부할 수 있습니다. 다만, 일 처리하는 번거로움이 발생될 수 있습니다.<br>
+    ◦ 본인은 개인정보의 수집·이용목적, 개인정보의 항목, 보유·이용기간 및 파기 방법, 동의를 거부할 권리가 있다는 사실과 동의 시 혜택에 대해 안내받았으며, 이를 충분히 이해하고 위의 내용에 동의합니다.
+  </div>
+  <div class="ox" data-ox="consent" style="margin-top:10px"><button data-v="동의">동의</button><button data-v="미동의">미동의</button></div>
+  <p class="note">※ 서명은 출력물에 직접 합니다.</p>
+</section>
+
+<section class="card">
+  <div id="validation"></div>
+  <button class="btn primary" id="submitBtn" style="margin-top:10px">제출하기</button>
+  <div id="submitMsg"></div>
+  <p class="note">같은 성명·생년월일로 다시 제출하면 이전 제출 내용이 수정됩니다.</p>
+  <button class="btn" id="previewBtn" style="margin-top:8px;width:100%">출력 양식 미리보기</button>
+  <button class="btn x" id="resetBtn" style="margin-top:4px;width:100%">입력 초기화</button>
+</section>
+
+<section id="preview" class="hide"></section>
+</main>
+
+<script>
+/* ===== 설정 ===== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiAeD4u9m-DklOn8VTgTx5YU3eJv7KtFwqWRSCLkf6gowvMTONG8jiT5IVZRAbFLV3/exec";   // Apps Script 웹앱 주소
+let CFG = DEFAULT_CONFIG;
+
+const $ = id => document.getElementById(id);
+const S = { staff:"", wantHead:"", wantHR:"", wantNon:"", consent:"", heads:[], headPicks:["","",""], hrPicks:["","",""], nonPicks:[{dept:"",task:""},{dept:"",task:""},{dept:"",task:""}] };
+const TEXT = ["name","birth","license","subject","address","phone","careerYears","arrivalDate","cur","tSchool","tPost","tGrade","tTask","hrMid","hrHigh","reason"];
+
+const headDepts = () => CFG.depts.map(d=>d.name);
+const nonDepts = () => CFG.depts.filter(d=>d.tasks && d.tasks.length);
+function opt(list, val, ph){ return `<option value="">${ph}</option>` + list.map(v=>`<option${v===val?" selected":""}>${esc(v)}</option>`).join(""); }
+
+function renderHeads(){
+  const box=$("heads"); box.innerHTML="";
+  S.heads.forEach((h,i)=>{
+    const row=document.createElement("div"); row.className="headrow";
+    row.innerHTML=`<select>${opt(headDepts(),h.dept,"부장명 선택")}</select><input type="number" min="1" step="1" inputmode="numeric" placeholder="년" value="${esc(h.years)}"><button class="btn x" title="삭제">✕</button>`;
+    const [sel,inp,del]=row.children;
+    sel.onchange=()=>{h.dept=sel.value; update();};
+    inp.oninput=()=>{h.years=inp.value; update();};
+    del.onclick=()=>{S.heads.splice(i,1); renderHeads(); update();};
+    box.appendChild(row);
+  });
+  $("addHead").classList.toggle("hide", S.heads.length>=3);
+}
+$("addHead").onclick=()=>{ if(S.heads.length<3){ S.heads.push({dept:"",years:""}); renderHeads(); update(); } };
+
+function renderPicks(){
+  const hp=$("headPicks"); hp.innerHTML="";
+  S.headPicks.forEach((v,i)=>{ const r=document.createElement("div"); r.className="pickrow one";
+    r.innerHTML=`<span>${i+1}지망</span><select>${opt(headDepts(),v,"부서 선택")}</select>`;
+    r.children[1].onchange=e=>{S.headPicks[i]=e.target.value; update();}; hp.appendChild(r); });
+  const gp=$("hrPicks"); gp.innerHTML="";
+  S.hrPicks.forEach((v,i)=>{ const r=document.createElement("div"); r.className="pickrow one";
+    r.innerHTML=`<span>${i+1}지망</span><select>${opt(CFG.grades,v,"학년 선택")}</select>`;
+    r.children[1].onchange=e=>{S.hrPicks[i]=e.target.value; update();}; gp.appendChild(r); });
+  const np=$("nonPicks"); np.innerHTML="";
+  S.nonPicks.forEach((p,i)=>{ const r=document.createElement("div"); r.className="pickrow";
+    const tasks=(nonDepts().find(d=>d.name===p.dept)||{tasks:[]}).tasks;
+    r.innerHTML=`<span>${i+1}지망</span><select>${opt(nonDepts().map(d=>d.name),p.dept,"부서")}</select><select>${opt(tasks,p.task,"업무")}</select>`;
+    r.children[1].onchange=e=>{p.dept=e.target.value; p.task=""; renderPicks(); update();};
+    r.children[2].onchange=e=>{p.task=e.target.value; update();};
+    np.appendChild(r); });
+}
+
+document.querySelectorAll("[data-ox]").forEach(g=>{
+  const key=g.dataset.ox;
+  g.querySelectorAll("button").forEach(b=>b.onclick=()=>{ S[key]=b.dataset.v; update(); });
+});
+
+function collect(){
+  const d={}; TEXT.forEach(k=>d[k]=$(k).value.trim());
+  const t={is:S.staff==="전입", school:d.tSchool, post:d.tPost, grade:d.tGrade, task:d.tTask};
+  return { name:d.name, birth:d.birth, license:d.license, subject:d.subject, address:d.address, phone:d.phone,
+    careerYears:d.careerYears, arrivalDate:d.arrivalDate, cur: S.staff==="전입"?"(전입교사)":S.staff==="신규"?"(신규교사)":d.cur, staff:S.staff, transfer:t,
+    heads:S.heads.filter(h=>h.dept).map(h=>({dept:h.dept,years:h.years})), hrMid:d.hrMid, hrHigh:d.hrHigh,
+    wantHead:S.wantHead, headPicks:S.wantHead==="O"?S.headPicks.slice():[],
+    wantHR:S.wantHR, hrPicks:S.wantHR==="O"?S.hrPicks.slice():[],
+    wantNon:S.wantNon, nonPicks:S.wantNon==="O"?S.nonPicks.map(p=>({...p})):[],
+    reason:d.reason, consent:S.consent };
+}
+
+function validate(d){
+  const E=[];
+  if(!S.staff) E.push("교사 구분(본교 재직 / 전입 / 신규)을 선택하세요.");
+  const need=[["name","성명"],["birth","생년월일"],["license","소지자격"],["subject","발령교과"],["address","주소"],["phone","휴대폰번호"],["careerYears","교육 경력"],["arrivalDate","본교 발령일"]];
+  need.forEach(([k,l])=>{ if(!d[k]) E.push(`${l}을(를) 입력하세요.`); });
+  if(d.phone && !/^01[0-9]-?\d{3,4}-?\d{4}$/.test(d.phone)) E.push("휴대폰번호 형식을 확인하세요. (예: 010-1234-5678)");
+  if(!S.staff||S.staff==="신규"){}
+  else if(d.transfer.is){ if(!d.transfer.school||!d.transfer.grade||!d.transfer.task) E.push("전입교사는 전임교, 담당학년, 담당업무를 입력하세요."); }
+  else if(!d.cur) E.push("2026학년도 담당업무를 입력하세요.");
+  S.heads.forEach((h,i)=>{ if(!h.dept) E.push(`부장 경력 ${i+1}번째 줄의 부장명을 선택하세요.`); else if(!(+h.years>0)) E.push(`${h.dept} 부장 경력 연수를 입력하세요.`); });
+  const hd=S.heads.map(h=>h.dept).filter(Boolean); if(new Set(hd).size<hd.length) E.push("부장 경력에 같은 부장명이 중복되었습니다. 연수를 합쳐 한 줄로 입력하세요.");
+  if(d.hrMid===""||d.hrHigh==="") E.push("담임 경력(중학교, 고등학교)을 입력하세요. 없으면 0");
+  if(!d.wantHead||!d.wantHR||!d.wantNon) E.push("부장·담임·비담임 희망 여부를 모두 선택하세요.");
+  if(d.wantHead==="X"&&d.wantHR==="X"&&d.wantNon==="X") E.push("부장·담임·비담임 중 하나 이상은 희망(○)으로 선택하세요.");
+  const chk3=(arr,label,unit)=>{ if(arr.some(v=>!v)) E.push(`${label} 1~3지망을 모두 선택하세요.`); else if(new Set(arr).size<3) E.push(`${label} 1~3지망은 서로 다른 ${unit}로 선택하세요.`); };
+  if(d.wantHead==="O") chk3(d.headPicks,"부장 희망","부서");
+  if(d.wantHR==="O") chk3(d.hrPicks,"담임 희망","학년");
+  if(d.wantNon==="O"){
+    if(d.nonPicks.some(p=>!p.dept||!p.task)) E.push("비담임 희망 1~3지망의 부서와 업무를 모두 선택하세요.");
+    else if(new Set(d.nonPicks.map(p=>p.dept)).size<3) E.push("비담임 희망 1~3지망은 서로 다른 부서로 선택하세요.");
+  }
+  if(!d.reason) E.push(d.wantNon==="O"?"희망 사유 및 참고사항에 비담임 희망 사유를 포함해 입력하세요.":"희망 사유 및 참고사항을 입력하세요.");
+  if(!d.consent) E.push("개인정보 수집·이용 동의 여부를 선택하세요.");
+  return E;
+}
+
+function update(){
+  document.querySelectorAll("[data-ox]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on", S[g.dataset.ox]===b.dataset.v)));
+  $("headPicks").classList.toggle("hide", S.wantHead!=="O");
+  $("hrPicks").classList.toggle("hide", S.wantHR!=="O");
+  $("nonPicks").classList.toggle("hide", S.wantNon!=="O");
+  $("staffNeed").classList.toggle("hide", !!S.staff); $("curWrap").classList.toggle("hide", S.staff!=="본교"); $("transferWrap").classList.toggle("hide", S.staff!=="전입"); $("newbieNote").classList.toggle("hide", S.staff!=="신규");
+  const d=collect(); const E=validate(d);
+  $("validation").innerHTML = E.length ? `<div class="status bad">${E.map(e=>"• "+esc(e)).join("<br>")}</div>` : `<div class="status ok">모두 입력되었습니다. 제출할 수 있습니다.</div>`;
+  save(); return {d,E};
+}
+
+/* 임시 저장 (이 기기 브라우저에만) */
+const KEY="okbit-bunjang-2027";
+function save(){ try{ const o={S}; TEXT.forEach(k=>o[k]=$(k).value); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return; TEXT.forEach(k=>{ if(typeof o[k]==="string") $(k).value=o[k]; }); if(o.S) Object.assign(S,o.S); }catch(e){} }
+
+document.querySelectorAll("input,select,textarea").forEach(el=>{ el.addEventListener("input",update); el.addEventListener("change",update); });
+$("resetBtn").onclick=()=>{ if(!confirm("입력한 내용을 모두 지울까요? (이미 제출한 내용은 그대로 남습니다)")) return; try{localStorage.removeItem(KEY);}catch(e){} location.reload(); };
+$("previewBtn").onclick=()=>{ const {d}=update(); injectPrintCss(); const p=$("preview"); p.innerHTML=renderForm({...d,submittedAt:new Date().toISOString()}); p.classList.remove("hide"); p.scrollIntoView({behavior:"smooth"}); };
+
+$("submitBtn").onclick=async()=>{
+  const {d,E}=update(); const m=$("submitMsg");
+  if(E.length){ m.innerHTML=`<div class="status bad">위 항목을 먼저 확인하세요.</div>`; $("validation").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  if(!SCRIPT_URL){ m.innerHTML=`<div class="status bad">제출 주소가 설정되지 않았습니다. 담당자에게 문의하세요.</div>`; return; }
+  if(!confirm(`${d.name} 선생님의 희망원을 제출합니다.`)) return;
+  $("submitBtn").disabled=true; m.innerHTML=`<div class="status ok">제출 중…</div>`;
+  try{
+    const r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"submit",data:d})});
+    const j=await r.json(); if(!j.ok) throw new Error(j.error||"오류");
+    m.innerHTML=`<div class="status ok">제출되었습니다${j.mode==="updated"?" (이전 제출 내용 수정)":""}. 출력물은 담당자가 일괄 출력하여 서명을 받습니다.</div>`;
+  }catch(e){ m.innerHTML=`<div class="status bad">제출 실패: ${esc(e.message)} — 잠시 후 다시 시도해 주세요.</div>`; }
+  $("submitBtn").disabled=false;
+};
+
+async function loadConfig(){
+  if(!SCRIPT_URL) return;
+  try{ const r=await fetch(SCRIPT_URL+"?action=config"); const j=await r.json(); if(j.ok&&j.config&&j.config.depts&&j.config.depts.length) CFG=j.config; }catch(e){}
+}
+
+(async()=>{ load(); await loadConfig(); renderHeads(); renderPicks(); update(); })();
+</script>
+</body>
+</html>
