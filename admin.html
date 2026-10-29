@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>업무분장 희망원 관리</title>
+<title>업무분장 희망 조사 관리</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="print.js"></script>
@@ -42,7 +42,7 @@ table.t td.l{text-align:left}
 </style>
 </head>
 <body>
-<header><h1>2027학년도 담임 및 교무분장 희망원 — 관리자</h1></header>
+<header><h1>2027학년도 담임 및 업무분장 희망 조사 — 관리자</h1></header>
 <main>
   <section class="card" id="loginCard">
     <h2>관리자 확인</h2>
@@ -60,7 +60,7 @@ table.t td.l{text-align:left}
           <button class="btn primary" id="printSel">선택 출력</button>
         </div>
       </div>
-      <p style="font-size:13px;color:#5f6b66;margin:8px 0 0">출력은 1인당 2쪽(희망원 + 개인정보 동의서)입니다. 인쇄 창에서 "머리글과 바닥글"을 끄세요.</p>
+      <p style="font-size:13px;color:#5f6b66;margin:8px 0 0">출력은 1인당 A4 1쪽(희망 조사서 + 개인정보 동의)입니다. 인쇄 창에서 "머리글과 바닥글"을 끄세요.</p>
     </section>
 
     <section class="card">
@@ -69,7 +69,8 @@ table.t td.l{text-align:left}
     </section>
 
     <section class="card">
-      <h2>희망 현황 (1·2·3지망 인원)</h2>
+      <h2>희망 현황</h2>
+      <div class="wrap" style="max-width:520px;margin-bottom:12px"><table class="t" id="sumGroup"></table></div>
       <div class="three">
         <div class="wrap"><table class="t" id="sumHead"></table></div>
         <div class="wrap"><table class="t" id="sumHR"></table></div>
@@ -86,7 +87,7 @@ table.t td.l{text-align:left}
 <div id="printArea"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiAeD4u9m-DklOn8VTgTx5YU3eJv7KtFwqWRSCLkf6gowvMTONG8jiT5IVZRAbFLV3/exec";   // index.html과 같은 Apps Script 웹앱 주소
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvoRVrXyop4TdKpcuzuBneHOuzus4LssLSdLiSbSUw-C548BdjmxkFkJYlR9gKyB0/exec";   // index.html과 같은 Apps Script 웹앱 주소
 const $=id=>document.getElementById(id);
 let ROWS=[], CFG=DEFAULT_CONFIG;
 
@@ -117,16 +118,18 @@ function sumTable(title, rows){
 }
 function render(){
   ROWS.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
-  const nO=k=>ROWS.filter(d=>d[k]==="O").length;
-  $("kpi").innerHTML=`<div>${ROWS.length}<span>제출</span></div><div>${nO("wantHead")}<span>부장 희망</span></div><div>${nO("wantHR")}<span>담임 희망</span></div><div>${nO("wantNon")}<span>비담임 희망</span></div><div>${ROWS.filter(d=>d.consent!=="동의").length}<span>개인정보 미동의</span></div>`;
-  $("list").innerHTML=`<tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>부장</th><th>부장 1지망</th><th>담임</th><th>담임 1지망</th><th>비담임</th><th>비담임 1지망</th><th>제출일시</th><th></th></tr>`+
-    ROWS.map((d,i)=>`<tr><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${esc(d.wantHead)}</td><td>${esc((d.headPicks||[])[0]||"")}</td><td>${esc(d.wantHR)}</td><td>${esc((d.hrPicks||[])[0]||"")}</td><td>${esc(d.wantNon)}</td><td>${esc(((d.nonPicks||[])[0]||{}).dept?((d.nonPicks[0].dept)+" – "+(d.nonPicks[0].task||"")):"")}</td><td>${d.submittedAt?new Date(d.submittedAt).toLocaleString("ko-KR"):""}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`).join("");
+  const first=g=>ROWS.filter(d=>(d.groupRank||[])[0]===g).length;
+  $("kpi").innerHTML=`<div>${ROWS.length}<span>제출</span></div><div>${first("담임")}<span>1순위 담임</span></div><div>${first("비담임")}<span>1순위 비담임</span></div><div>${first("부장")}<span>1순위 부장</span></div><div>${ROWS.filter(d=>d.consent!=="동의").length}<span>개인정보 미동의</span></div>`;
+  const np0=d=>{ const p=(d.nonPicks||[])[0]||{}; return p.dept?(p.dept+" – "+(p.task||"")):""; };
+  $("list").innerHTML=`<tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>구분</th><th>업무군 순위</th><th>담임 1지망</th><th>비담임 1지망</th><th>부장 1지망</th><th>제출일시</th><th></th></tr>`+
+    ROWS.map((d,i)=>`<tr><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${esc(d.staff||"")}</td><td>${esc((d.groupRank||[]).join(" > "))}</td><td>${esc((d.hrPicks||[])[0]||"")}</td><td>${esc(np0(d))}</td><td>${esc((d.headPicks||[])[0]||"")}</td><td>${d.submittedAt?new Date(d.submittedAt).toLocaleString("ko-KR"):""}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`).join("");
   $("all").onchange=e=>document.querySelectorAll(".sel").forEach(c=>c.checked=e.target.checked);
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>doPrint([ROWS[+b.dataset.p]]));
-  $("sumHead").innerHTML=sumTable("부장 희망 부서",count("h",CFG.depts.map(d=>d.name),d=>d.wantHead==="O"?d.headPicks:[]));
-  $("sumHR").innerHTML=sumTable("담임 희망 학년",count("g",CFG.grades,d=>d.wantHR==="O"?d.hrPicks:[]));
+  $("sumGroup").innerHTML=`<tr><th>업무군</th><th>1순위</th><th>2순위</th><th>3순위</th></tr>`+["담임","비담임","부장"].map(g=>{ const c=[0,1,2].map(i=>ROWS.filter(d=>(d.groupRank||[])[i]===g).length); return `<tr><td class="l">${g}</td>${c.map(x=>`<td>${x||""}</td>`).join("")}</tr>`; }).join("");
+  $("sumHead").innerHTML=sumTable("부장 희망 부서",count("h",CFG.depts.map(d=>d.name),d=>d.headPicks));
+  $("sumHR").innerHTML=sumTable("담임 희망 학년",count("g",CFG.grades,d=>d.hrPicks));
   const nonKeys=[]; CFG.depts.forEach(dp=>(dp.tasks||[]).forEach(t=>nonKeys.push(dp.name+" – "+t)));
-  $("sumNon").innerHTML=sumTable("비담임 희망 업무",count("n",nonKeys,d=>d.wantNon==="O"?(d.nonPicks||[]).map(p=>p.dept+" – "+p.task):[]));
+  $("sumNon").innerHTML=sumTable("비담임 희망 업무",count("n",nonKeys,d=>(d.nonPicks||[]).map(p=>p.dept+" – "+p.task)));
   const T=(CFG.teachers||[]).filter(Boolean);
   if(!T.length){ $("missing").innerHTML=`<p style="font-size:13px;color:#5f6b66">시트 "설정" 탭의 교사명단(D열)을 채우면 미제출자가 표시됩니다.</p>`; }
   else { const sub=new Set(ROWS.map(d=>String(d.name).trim())); const miss=T.filter(n=>!sub.has(String(n).trim()));
