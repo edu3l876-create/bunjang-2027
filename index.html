@@ -81,7 +81,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
   <h2>3. 경력</h2>
   <div class="grid">
     <label class="f">교육 경력 (합계)<input id="careerYears" type="number" min="0" step="1" inputmode="numeric" placeholder="년 (신규교사는 0)"></label>
-    <label class="f">본교 발령일<input id="arrivalDate" type="date"></label>
+    <label class="f hide" id="arrivalWrap">본교 발령일<input id="arrivalDate" type="date"></label>
   </div>
 </section>
 
@@ -132,8 +132,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 
 <section class="card">
   <h2>7. 희망 사유 및 참고사항</h2>
-  <textarea id="reason" style="min-height:120px" placeholder="예) 2학년 담임 경험이 있어 학년 운영에 도움이 될 수 있습니다. / 성적 업무를 2년간 맡아 업무에 익숙합니다. / 비담임을 희망하는 개인 사정이 있습니다."></textarea>
-  <p class="note">희망한 업무를 맡고자 하는 이유와 관련 경험·역량을 적어 주세요. <b>비담임을 희망하는 경우 그 사유를 구체적으로</b> 적어 주세요. 업무 배정 시 고려가 필요한 사항이 있으면 함께 적어 주세요.</p>
+  <textarea id="reason" style="min-height:120px" placeholder="예) 2학년 담임 경험이 있어 학년 운영에 도움이 될 수 있습니다. / 성적 업무를 2년간 맡아 업무에 익숙합니다. / 업무 배정 시 고려가 필요한 사항이 있습니다."></textarea>
+  <p class="note">희망한 업무를 맡고자 하는 이유와 관련 경험·역량을 적어 주세요. 업무 배정 시 고려가 필요한 사항이 있으면 함께 적어 주세요.</p>
 </section>
 
 <section class="card">
@@ -219,7 +219,7 @@ function collect(){
   const d={}; TEXT.forEach(k=>d[k]=$(k).value.trim());
   const t={is:S.staff==="전입", school:d.tSchool, post:d.tPost, grade:d.tGrade, task:d.tTask};
   return { name:d.name, birth:d.birth, license:d.license, subject:d.subject, address:d.address, phone:d.phone,
-    careerYears:d.careerYears, arrivalDate:d.arrivalDate, cur: S.staff==="전입"?"(전입교사)":S.staff==="신규"?"(신규교사)":d.cur, staff:S.staff, transfer:t,
+    careerYears:d.careerYears, arrivalDate:S.staff==="본교"?d.arrivalDate:"", cur: S.staff==="전입"?"(전입교사)":S.staff==="신규"?"(신규교사)":d.cur, staff:S.staff, transfer:t,
     heads:S.heads.filter(h=>h.dept).map(h=>({dept:h.dept,years:h.years})), hrMid:d.hrMid, hrHigh:d.hrHigh,
     wantHead:S.wantHead, headPicks:S.wantHead==="O"?S.headPicks.slice():[],
     wantHR:S.wantHR, hrPicks:S.wantHR==="O"?S.hrPicks.slice():[],
@@ -230,7 +230,8 @@ function collect(){
 function validate(d){
   const E=[];
   if(!S.staff) E.push("교사 구분(본교 재직 / 전입 / 신규)을 선택하세요.");
-  const need=[["name","성명"],["birth","생년월일"],["license","소지자격"],["subject","발령교과"],["address","주소"],["phone","휴대폰번호"],["careerYears","교육 경력"],["arrivalDate","본교 발령일"]];
+  const need=[["name","성명"],["birth","생년월일"],["license","소지자격"],["subject","발령교과"],["address","주소"],["phone","휴대폰번호"],["careerYears","교육 경력"]];
+  if(S.staff==="본교" && !d.arrivalDate) E.push("본교 발령일을 입력하세요.");
   need.forEach(([k,l])=>{ if(!d[k]) E.push(`${l}을(를) 입력하세요.`); });
   if(d.phone && !/^01[0-9]-?\d{3,4}-?\d{4}$/.test(d.phone)) E.push("휴대폰번호 형식을 확인하세요. (예: 010-1234-5678)");
   if(!S.staff||S.staff==="신규"){}
@@ -248,7 +249,7 @@ function validate(d){
     if(d.nonPicks.some(p=>!p.dept||!p.task)) E.push("비담임 희망 1~3지망의 부서와 업무를 모두 선택하세요.");
     else if(new Set(d.nonPicks.map(p=>p.dept)).size<3) E.push("비담임 희망 1~3지망은 서로 다른 부서로 선택하세요.");
   }
-  if(!d.reason) E.push(d.wantNon==="O"?"희망 사유 및 참고사항에 비담임 희망 사유를 포함해 입력하세요.":"희망 사유 및 참고사항을 입력하세요.");
+  if(!d.reason) E.push("희망 사유 및 참고사항을 입력하세요.");
   if(!d.consent) E.push("개인정보 수집·이용 동의 여부를 선택하세요.");
   return E;
 }
@@ -258,7 +259,7 @@ function update(){
   $("headPicks").classList.toggle("hide", S.wantHead!=="O");
   $("hrPicks").classList.toggle("hide", S.wantHR!=="O");
   $("nonPicks").classList.toggle("hide", S.wantNon!=="O");
-  $("staffNeed").classList.toggle("hide", !!S.staff); $("curWrap").classList.toggle("hide", S.staff!=="본교"); $("transferWrap").classList.toggle("hide", S.staff!=="전입"); $("newbieNote").classList.toggle("hide", S.staff!=="신규");
+  $("staffNeed").classList.toggle("hide", !!S.staff); $("curWrap").classList.toggle("hide", S.staff!=="본교"); $("transferWrap").classList.toggle("hide", S.staff!=="전입"); $("newbieNote").classList.toggle("hide", S.staff!=="신규"); $("arrivalWrap").classList.toggle("hide", S.staff!=="본교");
   const d=collect(); const E=validate(d);
   $("validation").innerHTML = E.length ? `<div class="status bad">${E.map(e=>"• "+esc(e)).join("<br>")}</div>` : `<div class="status ok">모두 입력되었습니다. 제출할 수 있습니다.</div>`;
   save(); return {d,E};
