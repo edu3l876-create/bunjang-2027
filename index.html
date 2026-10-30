@@ -46,6 +46,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 .chk input{width:auto;transform:scale(1.2)}
 .guide p{font-size:14px;line-height:1.7;margin:0 0 8px;color:#2b3330}
 .guide{border-left:4px solid var(--accent)}
+.req{color:#c0392b;font-style:normal;font-weight:700}
+input::placeholder,textarea::placeholder{color:#9aa5a0}
 .consent{font-size:13.5px;line-height:1.6;background:#f7f8f7;border-radius:8px;padding:10px 12px}
 .consent table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0}
 .consent td{border:1px solid #bbb;padding:5px 6px}
@@ -57,7 +59,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 <body>
 <header>
   <h1>2027학년도 담임 및 업무분장 희망 조사서</h1>
-  <p>옥빛중학교 · 빈칸 없이 모두 작성해 주세요. 업무는 배부된 업무분장표를 보고 선택합니다.</p>
+  <p>옥빛중학교 · <span style="color:#ffd6cf;font-weight:700">*</span> 표시는 필수 항목입니다. 업무는 배부된 업무분장표를 보고 선택합니다.</p>
 </header>
 <main>
 
@@ -68,7 +70,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 </section>
 
 <section class="card">
-  <h2>1. 교사 구분</h2>
+  <h2>1. 교사 구분 <i class="req">*</i></h2>
   <div class="ox" data-ox="staff"><button data-v="본교">본교 재직교사</button><button data-v="전입·신규">전입·신규교사</button></div>
   <p class="note">※ 2026학년도에 우리 학교에서 근무했으면 '본교 재직교사', 2027학년도에 새로 오셨으면(전입·신규) '전입·신규교사'를 선택하세요.</p>
 </section>
@@ -76,57 +78,58 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 <section class="card">
   <h2>2. 인적 사항</h2>
   <div class="grid">
-    <label class="f">성명<input id="name" autocomplete="name"></label>
-    <label class="f">생년월일<input id="birth" type="date"></label>
-    <label class="f">소지자격<input id="license" placeholder="예: 중등2급정교사(국어)"></label>
-    <label class="f">발령교과<input id="subject" placeholder="예: 국어"></label>
-    <label class="f full">주소<input id="address" autocomplete="street-address"></label>
-    <label class="f">휴대폰번호<input id="phone" type="tel" inputmode="numeric" placeholder="010-0000-0000"></label>
+    <label class="f">성명 <i class="req">*</i><input id="name" autocomplete="name" placeholder="예: 홍길동"></label>
+    <label class="f">생년월일 <i class="req">*</i><input id="birth" type="date"></label>
+    <label class="f">소지자격 <i class="req">*</i><input id="license" placeholder="예: 중등1급정교사(국어)"></label>
+    <label class="f">발령교과 <i class="req">*</i><input id="subject" placeholder="예: 국어"></label>
+    <label class="f full">주소 <i class="req">*</i><input id="address" autocomplete="street-address" placeholder="예: 경기도 양주시 옥정동 OO아파트 101동 1001호"></label>
+    <label class="f">휴대폰번호 <i class="req">*</i><input id="phone" type="tel" inputmode="numeric" placeholder="010-0000-0000"></label>
   </div>
 </section>
 
 <section class="card">
   <h2>3. 경력</h2>
   <div class="grid">
-    <label class="f">교육 경력 (합계)<input id="careerYears" type="number" min="0" step="1" inputmode="numeric" placeholder="년"></label>
-    <label class="f hide" id="arrivalWrap">본교 발령일<input id="arrivalDate" type="date"></label>
+    <label class="f">교육 경력 (합계, 년) <i class="req">*</i><input id="careerYears" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 12"></label>
+    <label class="f hide" id="arrivalWrap">본교 발령일 <i class="req">*</i><input id="arrivalDate" type="date"></label>
   </div>
 </section>
 
 <section class="card">
   <h2>4. 주요 경력</h2>
-  <div class="q">보직(부장) 경력 <span class="note">(최대 3개)</span></div>
-  <div id="heads"></div>
-  <button class="btn ghost" id="addHead">+ 부장 경력 추가</button>
-  <p class="note">※ 이전 학교의 부서명이 목록과 다르면, 가장 비슷한 부장명을 선택하세요. 부장 경력이 없으면 비워 두세요.</p>
-  <div class="q">담임 경력</div>
-  <div class="grid">
-    <label class="f">중학교 (년)<input id="hrMid" type="number" min="0" step="1" inputmode="numeric" placeholder="없으면 0"></label>
-    <label class="f">고등학교 (년)<input id="hrHigh" type="number" min="0" step="1" inputmode="numeric" placeholder="없으면 0"></label>
+  <div class="q">업무 경력 <i class="req">*</i></div>
+  <label class="chk" style="margin-bottom:6px"><input type="checkbox" id="noCareer"> 업무 경력 없음</label>
+  <div id="careerWrap"><textarea id="career" style="min-height:72px" placeholder="예) 학생자치부장 1년, 성적 2년, 평가 1년, 창체 2년"></textarea>
+  <p class="note">※ 최근 경력을 중심으로 부장 및 담당 업무와 기간을 적어 주세요.</p></div>
+  <div class="q">담임 경력 <i class="req">*</i></div>
+  <label class="chk" style="margin-bottom:6px"><input type="checkbox" id="noHR"> 담임 경력 없음</label>
+  <div class="grid" id="hrWrap">
+    <label class="f">중학교 (년)<input id="hrMid" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 5"></label>
+    <label class="f">고등학교 (년)<input id="hrHigh" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 0"></label>
   </div>
 </section>
 
 <section class="card">
-  <h2>5. 2026학년도 근무교 및 담당업무</h2>
+  <h2>5. 2026학년도 근무교 및 담당업무 <i class="req">*</i></h2>
   <p class="note" id="staffNeed" style="margin:0">※ 1번에서 교사 구분을 먼저 선택하세요.</p>
   <div id="prevWrap" class="grid hide">
-    <label class="f full">근무교<input id="pSchool"></label>
-    <label class="f">담당학년<input id="pGrade" placeholder="예: 2학년 (없으면 비움)"></label>
-    <label class="f">담당업무<input id="pTask" placeholder="예: 2-3 담임, 학생부장, 성적"></label>
+    <label class="chk full hide" id="noSchoolWrap"><input type="checkbox" id="noSchool"> 2026학년도 근무교 없음</label>
+    <label class="f full" id="pSchoolWrap">근무교<input id="pSchool" placeholder="예: OO중학교"></label>
+    <label class="f full">담당업무<input id="pTask" placeholder="예: 2-3 담임, 학생부장, 1·2학년 성적"></label>
   </div>
-  <p class="note hide" id="prevNote" style="margin:6px 0 0">2026학년도에 근무한 학교가 없으면 근무교에 '없음'이라고 적어 주세요.</p>
+
 </section>
 
 <section class="card">
   <h2>6. 2027학년도 희망 업무</h2>
-  <div class="q">① 업무군 희망 순위</div>
+  <div class="q">① 업무군 희망 순위 <i class="req">*</i></div>
   <p class="note" style="margin:0 0 6px" id="rankNote">담임, 비담임(부서 업무), 부장을 희망하는 순서대로 선택하세요.</p>
   <div id="groupRank" class="picks"></div>
 
-  <div class="q">② 담임 — 희망 학년</div>
+  <div class="q">② 담임 — 희망 학년 <i class="req">*</i></div>
   <div id="hrPicks" class="picks"></div>
 
-  <div class="q">③ 비담임 — 희망 부서 및 업무</div>
+  <div class="q">③ 비담임 — 희망 부서 및 업무 <i class="req">*</i></div>
   <div id="nonPicks" class="picks"></div>
 
   <div id="headBlock">
@@ -137,13 +140,13 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 </section>
 
 <section class="card">
-  <h2>7. 희망 사유 및 참고사항</h2>
-  <textarea id="reason" style="min-height:120px" placeholder="예) 2학년 담임 경험이 있어 학년 운영에 도움이 될 수 있습니다. / 성적 업무를 2년간 맡아 업무에 익숙합니다. / 업무 배정 시 고려가 필요한 사항이 있습니다."></textarea>
+  <h2>7. 희망 사유 및 참고사항 <span class="note">(선택 사항)</span></h2>
+  <textarea id="reason" style="min-height:120px" placeholder="예) 2학년 담임 경험이 있어 학년 운영에 도움이 될 수 있습니다.&#10;성적 업무를 2년간 맡아 업무에 익숙합니다.&#10;업무 배정 시 고려가 필요한 사항: 육아시간 사용 예정"></textarea>
   <p class="note">희망한 업무를 맡고자 하는 이유와 관련 경험·역량을 적어 주세요. 업무 배정 시 고려가 필요한 사항이 있으면 함께 적어 주세요.</p>
 </section>
 
 <section class="card">
-  <h2>8. 개인정보 수집·이용 동의</h2>
+  <h2>8. 개인정보 수집·이용 동의 <i class="req">*</i></h2>
   <div class="consent">
     「개인정보 보호법」에 따라 학교 업무에 도움을 받고자, 아래와 같이 개인정보 수집·이용·제공 동의를 받고자 합니다.
     <table>
@@ -177,26 +180,12 @@ let CFG = DEFAULT_CONFIG;
 
 const $ = id => document.getElementById(id);
 const S = { staff:"", groupRank:["","",""], consent:"", heads:[], headPicks:["","",""], hrPicks:["","",""], nonPicks:[{dept:"",task:""},{dept:"",task:""},{dept:"",task:""}] };
-const TEXT = ["name","birth","license","subject","address","phone","careerYears","arrivalDate","pSchool","pGrade","pTask","hrMid","hrHigh","reason"];
+const TEXT = ["name","birth","license","subject","address","phone","careerYears","arrivalDate","career","pSchool","pTask","hrMid","hrHigh","reason"];
 
 const headDepts = () => CFG.depts.map(d=>d.name);
 const nonDepts = () => CFG.depts.filter(d=>d.tasks && d.tasks.length);
 function opt(list, val, ph){ return `<option value="">${ph}</option>` + list.map(v=>`<option${v===val?" selected":""}>${esc(v)}</option>`).join(""); }
 
-function renderHeads(){
-  const box=$("heads"); box.innerHTML="";
-  S.heads.forEach((h,i)=>{
-    const row=document.createElement("div"); row.className="headrow";
-    row.innerHTML=`<select>${opt(headDepts(),h.dept,"부장명 선택")}</select><input type="number" min="1" step="1" inputmode="numeric" placeholder="년" value="${esc(h.years)}"><button class="btn x" title="삭제">✕</button>`;
-    const [sel,inp,del]=row.children;
-    sel.onchange=()=>{h.dept=sel.value; update();};
-    inp.oninput=()=>{h.years=inp.value; update();};
-    del.onclick=()=>{S.heads.splice(i,1); renderHeads(); update();};
-    box.appendChild(row);
-  });
-  $("addHead").classList.toggle("hide", S.heads.length>=3);
-}
-$("addHead").onclick=()=>{ if(S.heads.length<3){ S.heads.push({dept:"",years:""}); renderHeads(); update(); } };
 
 const openHeads = () => CFG.depts.filter(d=>d.headOpen!==false).map(d=>d.name);   // 부장 모집 부서 (설정 탭 C열)
 const headN = () => Math.min(3, openHeads().length);                                 // 부장 지망 개수 (모집 부서 수에 따라 0~3)
@@ -227,18 +216,20 @@ function renderPicks(){
 
 document.querySelectorAll("[data-ox]").forEach(g=>{
   const key=g.dataset.ox;
-  g.querySelectorAll("button").forEach(b=>b.onclick=()=>{ S[key]=b.dataset.v; if(key==="staff"){ S.groupRank=["","",""]; renderPicks(); } update(); });
+  g.querySelectorAll("button").forEach(b=>b.onclick=()=>{ S[key]=b.dataset.v; if(key==="staff"){ S.groupRank=["","",""]; $("noSchool").checked=false; $("arrivalDate").value = S.staff==="전입·신규" ? `${YEAR}-03-01` : ""; renderPicks(); } update(); });
 });
 
 function collect(){
   const d={}; TEXT.forEach(k=>d[k]=$(k).value.trim());
   const isNew=S.staff==="전입·신규";
-  const school=isNew?d.pSchool:SCHOOL;
-  const prev={school, grade:d.pGrade, task:d.pTask};
-  const t={is:isNew, school, post:"", grade:d.pGrade, task:d.pTask};   // 수집 서버 호환용
+  const none=isNew && $("noSchool").checked;
+  const school=none?"없음":isNew?d.pSchool:SCHOOL;
+  const task=none?"-":d.pTask;
+  const prev={school, task};
+  const t={is:isNew, school, post:"", grade:"", task};   // 수집 서버 호환용
   return { name:d.name, birth:d.birth, license:d.license, subject:d.subject, address:d.address, phone:d.phone,
-    careerYears:d.careerYears, arrivalDate:S.staff==="본교"?d.arrivalDate:"", cur:[d.pGrade,d.pTask].filter(Boolean).join(" "), prev, staff:S.staff, transfer:t,
-    heads:S.heads.filter(h=>h.dept).map(h=>({dept:h.dept,years:h.years})), hrMid:d.hrMid, hrHigh:d.hrHigh,
+    careerYears:d.careerYears, arrivalDate:d.arrivalDate, cur:task, prev, staff:S.staff, transfer:t,
+    career:$("noCareer").checked?"없음":d.career, heads:[], hrMid:$("noHR").checked?"0":d.hrMid, hrHigh:$("noHR").checked?"0":d.hrHigh,
     groupRank:S.groupRank.slice(0,groups().length),
     hrPicks:S.hrPicks.slice(), nonPicks:S.nonPicks.map(p=>({...p})),
     headPicks:headOn()?S.headPicks.slice(0,headN()):[], headClosed:!!S.staff&&!headOn(),
@@ -249,16 +240,15 @@ function validate(d){
   const E=[];
   if(!S.staff) E.push("교사 구분(본교 재직교사 / 전입·신규교사)을 선택하세요.");
   const need=[["name","성명"],["birth","생년월일"],["license","소지자격"],["subject","발령교과"],["address","주소"],["phone","휴대폰번호"],["careerYears","교육 경력"]];
-  if(S.staff==="본교" && !d.arrivalDate) E.push("본교 발령일을 입력하세요.");
+  if(S.staff && !d.arrivalDate) E.push("본교 발령일을 입력하세요.");
   need.forEach(([k,l])=>{ if(!d[k]) E.push(`${l}을(를) 입력하세요.`); });
   if(d.phone && !/^01[0-9]-?\d{3,4}-?\d{4}$/.test(d.phone)) E.push("휴대폰번호 형식을 확인하세요. (예: 010-1234-5678)");
   if(S.staff){
     if(!d.prev.school) E.push("2026학년도 근무교를 입력하세요. (없으면 '없음')");
     else if(d.prev.school!=="없음" && !d.prev.task) E.push("2026학년도 담당업무를 입력하세요.");
   }
-  S.heads.forEach((h,i)=>{ if(!h.dept) E.push(`부장 경력 ${i+1}번째 줄의 부장명을 선택하세요.`); else if(!(+h.years>0)) E.push(`${h.dept} 부장 경력 연수를 입력하세요.`); });
-  const hd=S.heads.map(h=>h.dept).filter(Boolean); if(new Set(hd).size<hd.length) E.push("부장 경력에 같은 부장명이 중복되었습니다. 연수를 합쳐 한 줄로 입력하세요.");
-  if(d.hrMid===""||d.hrHigh==="") E.push("담임 경력(중학교, 고등학교)을 입력하세요. 없으면 0");
+  if(!d.career) E.push("업무 경력을 입력하세요. (없으면 '업무 경력 없음' 체크)");
+  if(d.hrMid===""||d.hrHigh==="") E.push("담임 경력(중학교, 고등학교)을 입력하세요. (없으면 '담임 경력 없음' 체크, 한쪽만 없으면 0)");
   if(S.staff){
     if(d.groupRank.some(v=>!v)) E.push("업무군 희망 순위를 모두 선택하세요.");
     else if(new Set(d.groupRank).size<d.groupRank.length) E.push("업무군 희망 순위는 서로 다른 업무군으로 선택하세요.");
@@ -268,7 +258,6 @@ function validate(d){
   if(d.nonPicks.some(p=>!p.dept||!p.task)) E.push("비담임 희망 부서 및 업무 1~3지망을 모두 선택하세요.");
   else if(new Set(d.nonPicks.map(p=>p.dept)).size<3) E.push("비담임 희망 1~3지망은 서로 다른 부서로 선택하세요.");
   if(headOn()){ const hp=d.headPicks.filter(Boolean); if(new Set(hp).size<hp.length) E.push("부장 희망 부서는 서로 다른 부서로 선택하세요."); }
-  if(!d.reason) E.push("희망 사유 및 참고사항을 입력하세요.");
   if(!d.consent) E.push("개인정보 수집·이용 동의 여부를 선택하세요.");
   return E;
 }
@@ -279,8 +268,10 @@ function update(){
   $("rankNote").textContent = !headOn()
     ? "담임과 비담임(부서 업무)을 희망하는 순서대로 선택하세요." + (S.staff ? " (부장은 모집 중인 부서가 없어 제외)" : "")
     : "담임, 비담임(부서 업무), 부장을 희망하는 순서대로 선택하세요." + (headN()<3 ? ` (부장은 모집 중인 ${openHeads().join(", ")}만 선택)` : "");
-  $("staffNeed").classList.toggle("hide", !!S.staff); $("prevWrap").classList.toggle("hide", !S.staff); $("prevNote").classList.toggle("hide", S.staff!=="전입·신규");
-  const ps=$("pSchool"); if(S.staff==="본교"){ ps.value=SCHOOL; ps.disabled=true; } else if(ps.disabled){ ps.disabled=false; ps.value=""; } $("arrivalWrap").classList.toggle("hide", S.staff!=="본교");
+  $("staffNeed").classList.toggle("hide", !!S.staff); $("prevWrap").classList.toggle("hide", !S.staff); $("careerWrap").classList.toggle("hide",$("noCareer").checked); $("hrWrap").classList.toggle("hide",$("noHR").checked);
+  const isN=S.staff==="전입·신규", none=isN&&$("noSchool").checked;
+  $("noSchoolWrap").classList.toggle("hide", !isN); $("pSchoolWrap").classList.toggle("hide", none); $("pTask").closest("label").classList.toggle("hide", none);
+  const ps=$("pSchool"); if(S.staff==="본교"){ ps.value=SCHOOL; ps.disabled=true; } else if(ps.disabled){ ps.disabled=false; ps.value=""; } $("arrivalWrap").classList.toggle("hide", !S.staff);
   const d=collect(); const E=validate(d);
   $("validation").innerHTML = E.length ? `<div class="status bad">${E.map(e=>"• "+esc(e)).join("<br>")}</div>` : `<div class="status ok">모두 입력되었습니다. 제출할 수 있습니다.</div>`;
   save(); return {d,E};
@@ -288,8 +279,8 @@ function update(){
 
 /* 임시 저장 (이 기기 브라우저에만) */
 const KEY="okbit-bunjang-2027";
-function save(){ try{ const o={S}; TEXT.forEach(k=>o[k]=$(k).value); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
-function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return; TEXT.forEach(k=>{ if(typeof o[k]==="string") $(k).value=o[k]; }); if(o.S) Object.assign(S,o.S); if(S.staff==="전입"||S.staff==="신규") S.staff="전입·신규"; }catch(e){} }
+function save(){ try{ const o={S,noSchool:$("noSchool").checked,noCareer:$("noCareer").checked,noHR:$("noHR").checked}; TEXT.forEach(k=>o[k]=$(k).value); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
+function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return; TEXT.forEach(k=>{ if(typeof o[k]==="string") $(k).value=o[k]; }); if(o.S) Object.assign(S,o.S); $("noSchool").checked=!!o.noSchool; $("noCareer").checked=!!o.noCareer; $("noHR").checked=!!o.noHR; if(S.staff==="전입"||S.staff==="신규") S.staff="전입·신규"; }catch(e){} }
 
 document.querySelectorAll("input,select,textarea").forEach(el=>{ el.addEventListener("input",update); el.addEventListener("change",update); });
 $("resetBtn").onclick=()=>{ if(!confirm("입력한 내용을 모두 지울까요? (이미 제출한 내용은 그대로 남습니다)")) return; try{localStorage.removeItem(KEY);}catch(e){} location.reload(); };
@@ -314,7 +305,7 @@ async function loadConfig(){
   try{ const r=await fetch(SCRIPT_URL+"?action=config"); const j=await r.json(); if(j.ok&&j.config&&j.config.depts&&j.config.depts.length) CFG=j.config; }catch(e){}
 }
 
-(async()=>{ load(); await loadConfig(); renderHeads(); renderPicks(); update(); })();
+(async()=>{ load(); await loadConfig(); renderPicks(); update(); })();
 </script>
 </body>
 </html>
