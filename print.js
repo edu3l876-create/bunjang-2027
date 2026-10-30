@@ -1,11 +1,11 @@
-/* 옥빛중 2027 담임 및 교무분장 희망원 — 공통 설정 및 출력 양식 */
+/* 옥빛중 2027 담임 및 업무분장 희망 조사서 — 공통 설정 및 출력 양식 */
 const SCHOOL = "옥빛중학교";
 const YEAR = 2027;
 
 // 시트 "설정" 탭을 불러오지 못할 때 쓰는 기본 목록 (2026학년도 업무분장 기준)
 const DEFAULT_CONFIG = {
   depts: [
-    { name: "교무기획부", tasks: ["인사", "생기부", "성적", "특수"] },
+    { name: "교무기획부", tasks: ["인사", "생기부", "성적", "특수"] },   // headOpen:false → 부장 모집 안 함
     { name: "교육과정부", tasks: ["자유학기", "창체"] },
     { name: "교육연구부", tasks: ["평가", "학력향상", "사서"] },
     { name: "생활인권부", tasks: ["학폭책임교사", "학폭", "생활인권교육", "전문상담", "보건"] },
@@ -40,6 +40,7 @@ const PRINT_CSS = `
 .pf td{border:1px solid #000;padding:5px 6px;vertical-align:middle;word-break:keep-all;overflow-wrap:anywhere}
 .pf td.h{background:#f0f0f0;text-align:center;font-weight:700}
 .pf td.c{text-align:center}
+.pf td.rk{font-size:14px;font-weight:700}
 .pf td.tall{height:150px;vertical-align:top}
 .pf .small{font-size:11px;color:#333}
 .pf .sig{margin-top:10px;font-size:13.5px;line-height:1.9}
@@ -64,9 +65,8 @@ function injectPrintCss() {
   document.head.appendChild(s);
 }
 
-const OX = v => v === "O" ? "○" : v === "X" ? "X" : "";
 
-// d: 제출 데이터 1건 → 희망원 + 동의서 (A4 2쪽)
+// d: 제출 데이터 1건 → 희망 조사서 + 동의서 (A4 1쪽)
 function renderForm(d) {
   const heads = (d.heads || []).filter(h => h && h.dept);
   const headTxt = [0, 1, 2].map(i => heads[i] ? `( ${esc(heads[i].dept)} )부장 ( ${esc(heads[i].years)} )년` : "(　　　)부장 (　)년").join(", ");
@@ -75,10 +75,12 @@ function renderForm(d) {
   const t = d.transfer || {};
   const transferTxt = d.staff === "신규" ? "신규교사 (해당 없음)" : t.is ? `전임교: ${esc(t.school)} &nbsp; 보직: ${esc(t.post)} &nbsp; 담당학년: ${esc(t.grade)} &nbsp; 담당업무: ${esc(t.task)}` : "전 임 교 : &nbsp;&nbsp;&nbsp;&nbsp; 보 직 : &nbsp;&nbsp;&nbsp;&nbsp; 담당학년 : &nbsp;&nbsp;&nbsp;&nbsp; 담당업무 :";
   const agree = d.consent === "동의";
+  const rk = g => { const i = (d.groupRank || []).indexOf(g); return i >= 0 ? `${i + 1}순위` : (g === "부장" && (d.staff === "신규" || d.headClosed) ? "해당 없음" : ""); };
+  const isNew = d.staff === "신규";
   return `
 <div class="pf">
  <div class="page">
-  <h1>${YEAR}학년도 담임 및 교무분장 희망원</h1>
+  <h1>${YEAR}학년도 담임 및 업무분장 희망 조사서</h1>
   <p class="subt">(빈칸 없이 모두 작성해 주세요.)</p>
   <table>
    <colgroup><col style="width:13%"><col style="width:20%"><col style="width:12%"><col style="width:15%"><col style="width:12%"><col style="width:28%"></colgroup>
@@ -88,12 +90,13 @@ function renderForm(d) {
    <tr><td class="h">교육 경력</td><td class="c">${esc(d.careerYears)} 년</td><td class="h">본교 발령일</td><td class="c">${esc(d.arrivalDate || (d.staff === "전입" ? "(전입)" : d.staff === "신규" ? "(신규)" : ""))}</td><td class="h small">${YEAR - 1}학년도<br>담당업무</td><td class="c">${esc(d.cur)}</td></tr>
    <tr><td class="h" rowspan="2">주요 경력</td><td class="h">보직(부장)</td><td colspan="4">${headTxt}</td></tr>
    <tr><td class="h">담임</td><td colspan="4">중학교 ( ${esc(d.hrMid ?? "")} )년 &nbsp;&nbsp;&nbsp; 고등학교 ( ${esc(d.hrHigh ?? "")} )년</td></tr>
-   <tr><td class="h" rowspan="2">부장<br>희망 여부</td><td class="c" rowspan="2" style="font-size:16px">${OX(d.wantHead)}</td><td class="h" rowspan="2">희망시<br>부장명</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
-   <tr><td colspan="3">1지망: ${pick(d.headPicks, 0)} &nbsp;&nbsp; 2지망: ${pick(d.headPicks, 1)} &nbsp;&nbsp; 3지망: ${pick(d.headPicks, 2)}</td></tr>
-   <tr><td class="h" rowspan="2">담임<br>희망 여부</td><td class="c" rowspan="2" style="font-size:16px">${OX(d.wantHR)}</td><td class="h" rowspan="2">희망 학년</td><td colspan="3" class="small c">1, 2, 3지망 다른 학년 기입</td></tr>
+   <tr><td class="h">업무군</td><td class="h">희망 순위</td><td class="h" colspan="4">세부 희망 (1, 2, 3지망)</td></tr>
+   <tr><td class="h" rowspan="2">담임</td><td class="c rk" rowspan="2">${rk("담임")}</td><td class="h" rowspan="2">희망 학년</td><td colspan="3" class="small c">1, 2, 3지망 다른 학년 기입</td></tr>
    <tr><td colspan="3">1지망: ${pick(d.hrPicks, 0)} &nbsp;&nbsp; 2지망: ${pick(d.hrPicks, 1)} &nbsp;&nbsp; 3지망: ${pick(d.hrPicks, 2)}</td></tr>
-   <tr><td class="h" rowspan="2">비담임<br>희망 여부</td><td class="c" rowspan="2" style="font-size:16px">${OX(d.wantNon)}</td><td class="h" rowspan="2">희망시<br>부서명</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
+   <tr><td class="h" rowspan="2">비담임</td><td class="c rk" rowspan="2">${rk("비담임")}</td><td class="h" rowspan="2">희망 부서<br>및 업무</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
    <tr><td colspan="3">1지망: ${nonPick(0)}<br>2지망: ${nonPick(1)}<br>3지망: ${nonPick(2)}</td></tr>
+   <tr><td class="h" rowspan="2">부장</td><td class="c rk" rowspan="2">${rk("부장")}</td><td class="h" rowspan="2">희망 부서</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
+   <tr><td colspan="3">${isNew ? "신규교사 (해당 없음)" : d.headClosed ? "부장 모집 부서 없음 (해당 없음)" : (d.headPicks || []).map((v, i) => `${i + 1}지망: ${esc(v)}`).join(" &nbsp;&nbsp; ")}</td></tr>
    <tr><td class="h" colspan="2">${YEAR - 1}학년도 보직 및 담당업무<br><span class="small">(전입교사만 작성)</span></td><td colspan="4">${transferTxt}</td></tr>
    <tr><td class="h" colspan="2">희망 사유 및 참고사항<br><span class="small">(희망 업무를 맡고자 하는 이유,<br>업무 배정 시 참고사항 등)</span></td><td colspan="4" class="tall">${nl(d.reason)}</td></tr>
   </table>
@@ -110,7 +113,7 @@ function renderForm(d) {
    &nbsp; ( 동의 <span class="box">${agree ? "✓" : ""}</span> &nbsp; 미동의 <span class="box">${d.consent === "미동의" ? "✓" : ""}</span> )</p>
   </div>
   <div class="sig">
-   <div>위와 같이 ${YEAR}학년도 담임 및 교무분장 희망원을 작성하여 제출합니다.</div>
+   <div>위와 같이 ${YEAR}학년도 담임 및 업무분장 희망 조사서를 작성하여 제출합니다.</div>
    <div class="r">${fmtDate(d.submittedAt)}</div>
    <div class="r">작성자 &nbsp; 성명 &nbsp; <b>${esc(d.name)}</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명 또는 인)</div>
   </div>
