@@ -73,7 +73,8 @@ function renderForm(d) {
   const pick = (arr, i) => esc((arr || [])[i] || "");
   const nonPick = i => { const p = (d.nonPicks || [])[i] || {}; return p.dept ? esc(p.dept + (p.task ? " – " + p.task : "")) : ""; };
   const t = d.transfer || {};
-  const transferTxt = d.staff === "신규" ? "신규교사 (해당 없음)" : t.is ? `전임교: ${esc(t.school)} &nbsp; 보직: ${esc(t.post)} &nbsp; 담당학년: ${esc(t.grade)} &nbsp; 담당업무: ${esc(t.task)}` : "전 임 교 : &nbsp;&nbsp;&nbsp;&nbsp; 보 직 : &nbsp;&nbsp;&nbsp;&nbsp; 담당학년 : &nbsp;&nbsp;&nbsp;&nbsp; 담당업무 :";
+  const pv = d.prev || { school: t.is ? t.school : SCHOOL, grade: t.grade || "", task: t.is ? t.task : d.cur };
+  const staffLabel = d.staff === "본교" ? "본교 재직" : d.staff ? "전입·신규" : "";
   const agree = d.consent === "동의";
   const rk = g => { const i = (d.groupRank || []).indexOf(g); return i >= 0 ? `${i + 1}순위` : (g === "부장" && (d.staff === "신규" || d.headClosed) ? "해당 없음" : ""); };
   const isNew = d.staff === "신규";
@@ -87,7 +88,7 @@ function renderForm(d) {
    <tr><td class="h">성명</td><td class="c">${esc(d.name)}</td><td class="h">생년월일</td><td class="c">${esc(d.birth)}</td><td class="h">소지자격</td><td class="c">${esc(d.license)}</td></tr>
    <tr><td class="h">발령교과</td><td class="c">${esc(d.subject)}</td><td class="h">휴대폰</td><td class="c" colspan="3">${esc(d.phone)}</td></tr>
    <tr><td class="h">주소</td><td colspan="5">${esc(d.address)}</td></tr>
-   <tr><td class="h">교육 경력</td><td class="c">${esc(d.careerYears)} 년</td><td class="h">본교 발령일</td><td class="c">${esc(d.arrivalDate || (d.staff === "전입" ? "(전입)" : d.staff === "신규" ? "(신규)" : ""))}</td><td class="h small">${YEAR - 1}학년도<br>담당업무</td><td class="c">${esc(d.cur)}</td></tr>
+   <tr><td class="h">교육 경력</td><td class="c">${esc(d.careerYears)} 년</td><td class="h">본교 발령일</td><td class="c">${esc(d.arrivalDate || (d.staff && d.staff !== "본교" ? "-" : ""))}</td><td class="h">교사 구분</td><td class="c">${staffLabel}</td></tr>
    <tr><td class="h" rowspan="2">주요 경력</td><td class="h">보직(부장)</td><td colspan="4">${headTxt}</td></tr>
    <tr><td class="h">담임</td><td colspan="4">중학교 ( ${esc(d.hrMid ?? "")} )년 &nbsp;&nbsp;&nbsp; 고등학교 ( ${esc(d.hrHigh ?? "")} )년</td></tr>
    <tr><td class="h">업무군</td><td class="h">희망 순위</td><td class="h" colspan="4">세부 희망 (1, 2, 3지망)</td></tr>
@@ -96,8 +97,8 @@ function renderForm(d) {
    <tr><td class="h" rowspan="2">비담임</td><td class="c rk" rowspan="2">${rk("비담임")}</td><td class="h" rowspan="2">희망 부서<br>및 업무</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
    <tr><td colspan="3">1지망: ${nonPick(0)}<br>2지망: ${nonPick(1)}<br>3지망: ${nonPick(2)}</td></tr>
    <tr><td class="h" rowspan="2">부장</td><td class="c rk" rowspan="2">${rk("부장")}</td><td class="h" rowspan="2">희망 부서</td><td colspan="3" class="small c">1, 2, 3지망 다른 부서 기입</td></tr>
-   <tr><td colspan="3">${isNew ? "신규교사 (해당 없음)" : d.headClosed ? "부장 모집 부서 없음 (해당 없음)" : (d.headPicks || []).map((v, i) => `${i + 1}지망: ${esc(v)}`).join(" &nbsp;&nbsp; ")}</td></tr>
-   <tr><td class="h" colspan="2">${YEAR - 1}학년도 보직 및 담당업무<br><span class="small">(전입교사만 작성)</span></td><td colspan="4">${transferTxt}</td></tr>
+   <tr><td colspan="3">${isNew ? "신규교사 (해당 없음)" : d.headClosed ? "부장 모집 부서 없음 (해당 없음)" : ((d.headPicks || []).some(Boolean) ? (d.headPicks || []).map((v, i) => v ? `${i + 1}지망: ${esc(v)}` : "").filter(Boolean).join(" &nbsp;&nbsp; ") : "지망 없음")}</td></tr>
+   <tr><td class="h" colspan="2">${YEAR - 1}학년도<br>근무교 및 담당업무</td><td colspan="4">근무교: ${esc(pv.school)} &nbsp;&nbsp;&nbsp; 담당학년: ${esc(pv.grade || "-")} &nbsp;&nbsp;&nbsp; 담당업무: ${esc(pv.task || "-")}</td></tr>
    <tr><td class="h" colspan="2">희망 사유 및 참고사항<br><span class="small">(희망 업무를 맡고자 하는 이유,<br>업무 배정 시 참고사항 등)</span></td><td colspan="4" class="tall">${nl(d.reason)}</td></tr>
   </table>
   <div class="cs">
