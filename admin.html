@@ -199,7 +199,8 @@ function seatGap(group){
   const want=ROWS.filter(d=>prioOf(d)===group).length;
   return {seats,want,diff:want-seats,missing:quotaMissing(group)};
 }
-const asgLabel=a=>a? (a.group==="비담임"?`${a.key} ${a.task||""}`:a.group==="담임"?`${a.key} 담임`:`${a.key} 부장`) : "";
+const nl2=(dept,task)=>String(dept||"").replace(/부$/,"")+(task?"_"+task:"");   // 비담임 표기: 교무기획_인사
+const asgLabel=a=>a? (a.group==="비담임"?nl2(a.key,a.task):a.group==="담임"?`${a.key} 담임`:`${a.key} 부장`) : "";
 
 /* ---- 렌더 ---- */
 function render(){
@@ -219,7 +220,7 @@ function renderBoard(group){
     const cards=items.filter(({d})=>{ const a=ASG[d.name]; const isMine=a&&a.group===group&&a.key===key; return !(hide&&a&&!isMine); }).map(({d,p})=>{
       const a=ASG[d.name], isMine=a&&a.group===group&&a.key===key&&(group!=="비담임"||a.task===p.task);
       const cls=["cd", isMine?"mine":a?"taken":"", SEL===d.name?"sel":"", q&&String(d.name).includes(q)?"hit":""].join(" ");
-      return `<div class="${cls}" data-n="${esc(d.name)}">${chip(p)}<span class="nm">${esc(d.name)}</span>${p.task?`<span class="tk">${esc(p.task)}</span>`:"<span></span>"}
+      return `<div class="${cls}" data-n="${esc(d.name)}">${chip(p)}<span class="nm">${esc(d.name)}</span>${p.task?`<span class="tk">${esc(nl2(key,p.task))}</span>`:"<span></span>"}
         <span class="sub">${esc(d.subject||"")} · 경력 ${esc(d.careerYears||0)}년${d.staff&&d.staff!=="본교"?" · 전입·신규":""}${a&&!isMine?` · ${esc(asgLabel(a))} 배정`:""}</span></div>`;
     }).join("");
     return `<div class="col"><h3>${esc(key)}<small>${st.q?`정원 ${st.q} · `:""}우1 ${st.first} · 희망 ${items.length} · 배정 ${mine.length}</small></h3><div class="list">${cards||`<div class="empty">희망자 없음</div>`}</div></div>`;
@@ -235,7 +236,7 @@ function renderList(){
   <div class="tablewrap"><table class="t"><thead><tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>구분</th><th>경력</th><th>우선 희망</th><th>담임 지망</th><th>비담임 지망</th><th>부장 지망</th><th>배정</th><th></th></tr></thead><tbody>`+
   rows.map(d=>{ const i=ROWS.indexOf(d);
     return `<tr data-n="${esc(d.name)}"><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${d.staff==="본교"?"본교":"전입·신규"}</td><td>${esc(d.careerYears||0)}년</td><td>${esc(summary(d))}</td>
-    <td class="l">${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td class="l">${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(p.dept+" "+p.task)).join(" › ")}</td><td class="l">${(d.headPicks||[]).filter(Boolean).map(esc).join(" › ")||"-"}</td>
+    <td class="l">${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td class="l">${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(nl2(p.dept,p.task))).join(" › ")}</td><td class="l">${(d.headPicks||[]).filter(Boolean).map(esc).join(" › ")||"-"}</td>
     <td>${esc(asgLabel(ASG[d.name]))}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`; }).join("")+`</tbody></table></div>`;
   $("all").onchange=e=>document.querySelectorAll(".sel").forEach(c=>c.checked=e.target.checked);
   $("view").querySelectorAll("[data-p]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); doPrint([ROWS[+b.dataset.p]]); });
@@ -259,7 +260,7 @@ function renderSide(){
   const a=ASG[d.name];
   const pv=d.prev||{};
   const line=g=>{ const ps=prefs(d,g).filter(Boolean); const pr=prioOf(d); const lab=g==="부장"?(ps.length?"희망":"비희망"):g===pr?"우선":"차선";
-    return `<span class="chip ${lab==="우선"||lab==="희망"?"c1":lab==="차선"?"c2":"c3"}">${lab}</span><span><b>${g}</b> ${ps.map(p=>esc(p.key+(p.task?" "+p.task:""))).join(" › ")||"지망 없음"}</span>`; };
+    return `<span class="chip ${lab==="우선"||lab==="희망"?"c1":lab==="차선"?"c2":"c3"}">${lab}</span><span><b>${g}</b> ${ps.map(p=>esc(g==="비담임"?nl2(p.key,p.task):p.key)).join(" › ")||"지망 없음"}</span>`; };
   const opts=[];
   ["담임","비담임"].forEach(g=>prefs(d,g).forEach(p=>{ if(p) opts.push({group:g,key:p.key,task:p.task||"",p}); }));
   s.innerHTML=`<button class="close" id="closeSide" title="닫기">×</button>
@@ -271,7 +272,7 @@ function renderSide(){
    <h4>우선 희망과 지망</h4><div class="prefs">${["담임","비담임","부장"].map(line).join("")}</div>
    ${d.reason?`<h4>희망 사유 및 참고사항</h4><div style="font-size:13px;white-space:pre-wrap">${esc(d.reason)}</div>`:""}
    <h4>배정 ${a?`<span style="color:var(--done)">— ${esc(asgLabel(a))}</span>`:""}</h4>
-   <div class="asg">${opts.map((o,i)=>`<button class="btn ${a&&a.group===o.group&&a.key===o.key&&(a.task||"")===o.task?"on":""}" data-o="${i}">${chip(o.p)} ${esc(o.key+(o.task?" "+o.task:"")+(o.group==="담임"?" 담임":o.group==="부장"?" 부장":""))}</button>`).join("")}
+   <div class="asg">${opts.map((o,i)=>`<button class="btn ${a&&a.group===o.group&&a.key===o.key&&(a.task||"")===o.task?"on":""}" data-o="${i}">${chip(o.p)} ${esc(o.group==="비담임"?nl2(o.key,o.task):o.key+(o.group==="담임"?" 담임":o.group==="부장"?" 부장":""))}</button>`).join("")}
    ${a?`<button class="btn" id="unasg">배정 취소</button>`:""}</div>
    <p class="muted" style="margin-top:8px">배정은 시트 "배정" 탭에 자동 저장되어 학교 PC 등 다른 컴퓨터에서도 이어서 볼 수 있습니다.</p>
    <button class="btn" id="printOne" style="margin-top:6px">이 교사 조사서 출력</button>`;
@@ -285,16 +286,16 @@ $("q").addEventListener("input",render); $("hideTaken").addEventListener("change
 
 function meetingHTML(){
   const groups=[["담임","담임"],["비담임","비담임"]];
-  const tier=(it,f)=>it.filter(x=>f(score(x.p),x.p)).map(x=>esc(x.d.name)+(x.p.task?`(${esc(x.p.task)})`:"")).join(", ");
+  const tier=(it,f)=>it.filter(x=>f(score(x.p),x.p)).map(x=>esc(x.d.name)+(x.p.task?`(${esc(nl2(x.p.key,x.p.task))})`:"")).join(", ");
   let n=0;
   const rows=groups.map(([g,lab])=>columns(g).map(key=>{
     const st=colStat(g,key); const it=st.items.sort((a,b)=>score(a.p)-score(b.p));
     const tA=g==="부장"?tier(it,(s,p)=>p.pick===1):tier(it,s=>s<=2), tB=g==="부장"?tier(it,(s,p)=>p.pick===2):tier(it,s=>s>=3&&s<=4), tC=g==="부장"?tier(it,(s,p)=>p.pick===3):tier(it,s=>s>=5);
-    return `<tr><td>${esc(key)}${g==="담임"?" 담임":g==="부장"?" 부장":""}</td><td class="c">${st.q||""}</td><td>${tA}</td><td>${tB}</td><td>${tC}</td><td>${st.assigned.map(d=>esc(d.name)+(ASG[d.name].task?`(${esc(ASG[d.name].task)})`:"")).join(", ")}</td><td class="c">${st.first} / ${st.q||"-"}</td></tr>`;
+    return `<tr><td>${esc(key)}${g==="담임"?" 담임":g==="부장"?" 부장":""}</td><td class="c">${st.q||""}</td><td>${tA}</td><td>${tB}</td><td>${tC}</td><td>${st.assigned.map(d=>esc(d.name)+(ASG[d.name].task?`(${esc(nl2(ASG[d.name].key,ASG[d.name].task))})`:"")).join(", ")}</td><td class="c">${st.first} / ${st.q||"-"}</td></tr>`;
   }).join("")).join("");
   const T=ROWS.map(d=>{ n++; const a=ASG[d.name];
     return `<tr><td class="c">${n}</td><td>${esc(d.name)}</td><td class="c">${esc(d.subject||"")}</td><td class="c">${d.staff==="본교"?"본교":"전입·신규"}</td><td class="c">${esc(d.careerYears||0)}</td><td class="c">${esc(prioOf(d))}</td>
-    <td>${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td>${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(p.dept+" "+p.task)).join(" › ")}</td><td>${esc(d.career||"")}</td><td>${esc(asgLabel(a))}</td></tr>`; }).join("");
+    <td>${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td>${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(nl2(p.dept,p.task))).join(" › ")}</td><td>${esc(d.career||"")}</td><td>${esc(asgLabel(a))}</td></tr>`; }).join("");
   const today=new Date().toLocaleDateString("ko-KR");
   return `<div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 자리별</h2><p class="mtm">${today} · 제출 ${ROWS.length}명 · ${["담임","비담임"].map(g=>{ const x=seatGap(g); return x.missing.length?`${g} 정원 미입력, 우선 희망 ${x.want}명`:`${g} ${x.seats}자리, 우선 희망 ${x.want}명(${x.diff>0?x.diff+"명 초과":x.diff<0?(-x.diff)+"자리 남음":"일치"})`; }).join(" · ")} · 우1·우2 = 우선 희망 1·2지망, 우3·차1 = 중간, 차2·차3 = 낮음 · 부장 제외</p>
   <table><thead><tr><th style="width:13%">자리</th><th style="width:5%">정원</th><th>우1·우2</th><th>우3·차1</th><th>차2·차3</th><th style="width:15%">1차안</th><th style="width:7%">우1 / 정원</th></tr></thead><tbody>${rows}</tbody></table></div>
