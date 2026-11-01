@@ -77,7 +77,8 @@ function renderForm(d) {
   const pv = d.prev || { school: t.is ? t.school : SCHOOL, grade: t.grade || "", task: t.is ? t.task : d.cur };
   const staffLabel = d.staff === "본교" ? "본교 재직" : d.staff ? "전입·신규" : "";
   const agree = d.consent === "동의";
-  const rk = g => { const i = (d.groupRank || []).indexOf(g); return i >= 0 ? `${i + 1}순위` : (g === "부장" && (d.staff === "신규" || d.headClosed) ? "해당 없음" : ""); };
+  const prio = d.prio || (d.groupRank || []).find(g => g === "담임" || g === "비담임") || "";
+  const rk = g => g === "부장" ? (d.headClosed ? "해당 없음" : d.wantHead ? d.wantHead : (d.headPicks || []).some(Boolean) ? "희망" : "비희망") : (!prio ? "" : g === prio ? "우선" : "차선");
   const isNew = d.staff === "신규";
   return `
 <div class="pf">
@@ -93,10 +94,10 @@ function renderForm(d) {
    <tr><td class="h">근무교<br><span class="sm2">(${YEAR - 1}학년도)</span></td><td class="c">${esc(pv.school)}</td><td class="h">담당업무<br><span class="sm2">(${YEAR - 1}학년도)</span></td><td colspan="3" class="c">${esc(pv.task || "-")}</td></tr>
    <tr><td class="h" rowspan="2">주요 경력</td><td class="h">업무 경력</td><td colspan="4">${careerTxt}</td></tr>
    <tr><td class="h">담임</td><td colspan="4">${(+d.hrMid === 0 && +d.hrHigh === 0 && d.hrMid !== "" && d.hrMid != null) ? "없음" : `중학교 ( ${esc(d.hrMid ?? "")} )년 &nbsp;&nbsp;&nbsp; 고등학교 ( ${esc(d.hrHigh ?? "")} )년`}</td></tr>
-   <tr><td class="h">업무군</td><td class="h">희망 순위</td><td class="h" colspan="4">세부 희망 (1, 2, 3지망)</td></tr>
+   <tr><td class="h">업무군</td><td class="h">희망 여부</td><td class="h" colspan="4">세부 희망 (1, 2, 3지망)</td></tr>
    <tr><td class="h">담임</td><td class="c rk">${rk("담임")}</td><td class="h">희망 학년</td><td colspan="3">1지망: ${pick(d.hrPicks, 0)} &nbsp;&nbsp; 2지망: ${pick(d.hrPicks, 1)} &nbsp;&nbsp; 3지망: ${pick(d.hrPicks, 2)}</td></tr>
    <tr><td class="h">비담임</td><td class="c rk">${rk("비담임")}</td><td class="h">희망 부서<br>및 업무</td><td colspan="3">1지망: ${nonPick(0)}<br>2지망: ${nonPick(1)}<br>3지망: ${nonPick(2)}</td></tr>
-   <tr><td class="h">부장</td><td class="c rk">${rk("부장")}</td><td class="h">희망 부서</td><td colspan="3">${isNew ? "신규교사 (해당 없음)" : d.headClosed ? "부장 모집 부서 없음 (해당 없음)" : ((d.headPicks || []).some(Boolean) ? (d.headPicks || []).map((v, i) => v ? `${i + 1}지망: ${esc(v)}` : "").filter(Boolean).join(" &nbsp;&nbsp; ") : "지망 없음")}</td></tr>
+   <tr><td class="h">부장</td><td class="c rk">${rk("부장")}</td><td class="h">희망 부서</td><td colspan="3">${isNew ? "신규교사 (해당 없음)" : d.headClosed ? "부장 모집 부서 없음 (해당 없음)" : ((d.headPicks || []).some(Boolean) ? (d.headPicks || []).map((v, i) => v ? `${i + 1}지망: ${esc(v)}` : "").filter(Boolean).join(" &nbsp;&nbsp; ") : "-")}</td></tr>
    <tr><td class="h" colspan="2">희망 사유 및 참고사항<br><span class="small">(희망 업무를 맡고자 하는 이유,<br>업무 배정 시 참고사항 등)</span></td><td colspan="4" class="tall">${nl(d.reason)}</td></tr>
   </table>
   <div class="cs">

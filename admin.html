@@ -8,88 +8,127 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="print.js"></script>
 <style>
-:root{--bg:#f3f5f4;--card:#fff;--ink:#1d2321;--muted:#5f6b66;--line:#d6dcd9;--accent:#1f6f5c;--soft:#e3f1ec;--warn:#a4421f;--warnsoft:#fbeee8}
+/* 배정 보드: 위 고정 막대 + 화면 높이를 채우는 가로 칼럼 보드 + 오른쪽 상세 패널 */
+:root{--bg:#eef1ef;--card:#fff;--ink:#1d2321;--muted:#5f6b66;--line:#d3dad6;--accent:#1f6f5c;--soft:#e3f1ec;--warn:#a4421f;--warnsoft:#fbeee8;
+  --s1:#1f6f5c;--s2:#5c9c88;--s3:#b9d6cc;--done:#2d5fa8}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:15px}
-header{background:var(--accent);color:#fff;padding:18px 16px}
-header h1{margin:0;font-size:19px}
-main{max-width:1100px;margin:0 auto;padding:14px 16px 60px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
-.card h2{margin:0 0 10px;font-size:16px}
-input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px}
-.btn{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:9px 14px}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:14px;display:flex;flex-direction:column}
+header{background:var(--accent);color:#fff;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+header h1{margin:0;font-size:16px;margin-right:auto}
+.kpi{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;opacity:.95}
+.kpi b{font-size:16px;margin-right:3px;font-variant-numeric:tabular-nums}
+.btn{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 11px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.wrap{overflow-x:auto}
-table.t{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
-table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:center}
-table.t th{background:#eef2f0}
+header .btn{background:transparent;color:#fff;border-color:#9fc9bb}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:#fff;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 13px;cursor:pointer}
+.tabs button.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.bar input[type=search]{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:7px;width:150px}
+.bar label{display:flex;gap:5px;align-items:center;font-size:13px;color:var(--muted)}
+.legend{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.chip{display:inline-block;min-width:30px;text-align:center;border-radius:5px;padding:1px 5px;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.c1{background:var(--s1);color:#fff}.c2{background:var(--s2);color:#fff}.c3{background:var(--s3);color:#1d3b33}
+.work{flex:1;min-height:0;display:flex}
+.view{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.board{flex:1;min-height:0;display:flex;gap:10px;overflow-x:auto;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+.col{flex:1 0 210px;display:flex;flex-direction:column;background:#f7f9f8;border:1px solid var(--line);border-radius:9px;min-height:0}
+.col h3{margin:0;padding:8px 10px;font-size:13.5px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:6px;align-items:baseline;background:#fff;border-radius:9px 9px 0 0}
+.kpi em.gap{font-style:normal;font-size:11.5px;border-radius:4px;padding:1px 5px;margin-left:3px;background:rgba(255,255,255,.18)}
+.kpi em.over{background:#fbe3d6;color:#a4421f}.kpi em.under{background:#fff0c2;color:#7a5a00}
+.st{font-size:11px;border-radius:4px;padding:0 5px;font-weight:700;margin-left:4px}
+.st-경합{background:#fbe3d6;color:#a4421f}.st-부족{background:#fff0c2;color:#7a5a00}.st-충족{background:#e3f1ec;color:#1f6f5c}
+.col h3 small{font-weight:500;color:var(--muted);font-size:11.5px;white-space:nowrap}
+.col .list{flex:1;min-height:0;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px}
+.col .empty{color:var(--muted);font-size:12px;padding:8px}
+.cd{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 8px;display:grid;grid-template-columns:auto 1fr auto;gap:2px 7px;align-items:center;cursor:pointer}
+.cd:hover{border-color:var(--accent)}
+.cd .nm{font-weight:700}
+.cd .sub{grid-column:2/4;font-size:11.5px;color:var(--muted)}
+.cd .tk{font-size:11.5px;background:var(--soft);color:var(--accent);border-radius:4px;padding:0 5px}
+.cd.sel{outline:2px solid var(--ink)}
+.cd.hit{background:#fff6cf}
+.cd.taken{opacity:.38}
+.cd.mine{border-color:var(--done);background:#eaf1fb}
+.cd.mine .nm::after{content:" ✓ 배정";color:var(--done);font-size:11px}
+.side{width:340px;flex:none;background:#fff;border-left:1px solid var(--line);overflow-y:auto;padding:14px 16px}
+.side h2{margin:0 0 2px;font-size:17px}
+.side .muted{color:var(--muted);font-size:12.5px}
+.side dl{display:grid;grid-template-columns:86px 1fr;gap:5px 8px;margin:12px 0;font-size:13px}
+.side dt{color:var(--muted)}
+.side dd{margin:0;white-space:pre-wrap;word-break:keep-all}
+.side h4{margin:14px 0 6px;font-size:13px}
+.prefs{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;font-size:13px;align-items:center}
+.asg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.asg .btn{font-size:12.5px;padding:4px 8px}
+.asg .btn.on{background:var(--done);border-color:var(--done);color:#fff}
+.close{float:right;border:none;background:none;font-size:18px;cursor:pointer;color:var(--muted)}
+.tablewrap{flex:1;min-height:0;overflow:auto;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+table.t{border-collapse:collapse;width:100%;font-size:13px;background:#fff;min-width:880px}
+table.t th,table.t td{border:1px solid var(--line);padding:5px 7px;text-align:center}
+table.t th{background:#e8eeeb;position:sticky;top:0;z-index:1}
 table.t td.l{text-align:left}
-.kpi{display:flex;gap:10px;flex-wrap:wrap}
-.kpi div{background:var(--soft);color:var(--accent);border-radius:10px;padding:10px 14px;font-weight:700}
-.kpi span{display:block;font-size:12px;font-weight:500;color:var(--muted)}
-.status{font-size:14px;margin-top:8px;padding:9px 12px;border-radius:8px}
+table.t tr:hover td{background:#f6faf8;cursor:pointer}
+.login{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px}
+.login input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;width:100%;margin:10px 0}
+.status{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:7px}
 .status.bad{background:var(--warnsoft);color:var(--warn)}
 .status.ok{background:var(--soft);color:var(--accent)}
-.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:800px){.three{grid-template-columns:1fr}}
+.hide{display:none!important}
+@media(max-width:900px){ .side{position:fixed;inset:auto 0 0 0;width:auto;max-height:60%;border-left:none;border-top:2px solid var(--accent);z-index:5;box-shadow:0 -6px 20px rgba(0,0,0,.15)} }
 #printArea{display:none}
-@media print{
-  body{background:#fff}
-  header,main{display:none!important}
-  #printArea{display:block!important}
-}
+@media print{ body{display:block;background:#fff} header,.bar,.work,.login{display:none!important} #printArea{display:block!important} }
 </style>
 </head>
 <body>
-<header><h1>2027학년도 담임 및 업무분장 희망 조사 — 관리자</h1></header>
-<main>
-  <section class="card" id="loginCard">
-    <h2>관리자 확인</h2>
-    <div class="row"><input id="key" type="password" placeholder="관리자 비밀번호"><button class="btn primary" id="loginBtn">불러오기</button></div>
-    <div id="loginMsg"></div>
-  </section>
+<header>
+  <h1>2027 담임 및 업무분장 희망 조사 — 배정 보드</h1>
+  <div class="kpi hide" id="kpi"></div>
+  <span id="sync" style="font-size:12px;opacity:.85"></span>
+  <button class="btn hide" id="meetBtn">회의 자료 출력</button>
+  <button class="btn hide" id="reloadBtn">새로고침</button>
+</header>
 
-  <section id="dash" style="display:none">
-    <section class="card">
-      <div class="row" style="justify-content:space-between">
-        <div class="kpi" id="kpi"></div>
-        <div class="row">
-          <button class="btn" id="reloadBtn">새로고침</button>
-          <button class="btn primary" id="printAll">전체 출력</button>
-          <button class="btn primary" id="printSel">선택 출력</button>
-        </div>
-      </div>
-      <p style="font-size:13px;color:#5f6b66;margin:8px 0 0">출력은 1인당 A4 1쪽(희망 조사서 + 개인정보 동의)입니다. 인쇄 창에서 "머리글과 바닥글"을 끄세요.</p>
-    </section>
+<div class="login" id="loginCard">
+  <b>관리자 확인</b>
+  <input id="key" type="password" placeholder="관리자 비밀번호">
+  <button class="btn primary" id="loginBtn" style="width:100%">불러오기</button>
+  <div id="loginMsg"></div>
+</div>
 
-    <section class="card">
-      <h2>제출 목록</h2>
-      <div class="wrap"><table class="t" id="list"></table></div>
-    </section>
+<div class="bar hide" id="bar">
+  <div class="tabs" id="tabs">
+    <button data-t="담임" class="on">담임 보드</button>
+    <button data-t="비담임">비담임 보드</button>
+    <button data-t="list">교사 목록·출력</button>
+    <button data-t="miss">미제출</button>
+  </div>
+  <input type="search" id="q" placeholder="이름 찾기">
+  <label><input type="checkbox" id="hideTaken"> 배정된 교사 숨기기</label>
+  <div class="legend"><span class="chip c1">우1</span> 우선 희망 1지망 · <span class="chip c2">차1</span> 차선 희망 1지망 · 부장 제외</div>
+</div>
 
-    <section class="card">
-      <h2>희망 현황</h2>
-      <div class="wrap" style="max-width:520px;margin-bottom:12px"><table class="t" id="sumGroup"></table></div>
-      <div class="three">
-        <div class="wrap"><table class="t" id="sumHead"></table></div>
-        <div class="wrap"><table class="t" id="sumHR"></table></div>
-        <div class="wrap"><table class="t" id="sumNon"></table></div>
-      </div>
-    </section>
-
-    <section class="card" id="missingCard">
-      <h2>미제출자</h2>
-      <div id="missing"></div>
-    </section>
-  </section>
-</main>
+<div class="work hide" id="work">
+  <div class="view" id="view"></div>
+  <aside class="side hide" id="side"></aside>
+</div>
 <div id="printArea"></div>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvoRVrXyop4TdKpcuzuBneHOuzus4LssLSdLiSbSUw-C548BdjmxkFkJYlR9gKyB0/exec";   // index.html과 같은 Apps Script 웹앱 주소
 const $=id=>document.getElementById(id);
-let ROWS=[], CFG=DEFAULT_CONFIG;
+let ROWS=[], CFG=DEFAULT_CONFIG, TAB="담임", SEL=null;
+const ASG_KEY="okbit-bunjang-2027-asg";
+let ASG={}; try{ ASG=JSON.parse(localStorage.getItem(ASG_KEY)||"{}"); }catch(e){}
+let ADMIN_KEY="", saveTimer=null;
+function setSync(t,bad){ const el=$("sync"); if(el){ el.textContent=t; el.style.color=bad?"#ffd6cf":""; } }
+const saveAsg=()=>{
+  try{ localStorage.setItem(ASG_KEY,JSON.stringify(ASG)); }catch(e){}
+  if(!SCRIPT_URL||!ADMIN_KEY) return;
+  setSync("배정 저장 중…"); clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{ try{ await call({action:"saveAsg",key:ADMIN_KEY,asg:ASG}); setSync("배정 시트 저장됨 "+new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})); }catch(e){ setSync("배정 저장 실패 — 새로고침 후 다시 시도",true); } },700);
+};
 
 async function call(body){
   const r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
@@ -101,47 +140,183 @@ async function loadAll(){
   m.innerHTML=`<div class="status ok">불러오는 중…</div>`;
   try{
     const j=await call({action:"list",key:$("key").value});
-    ROWS=j.rows||[]; if(j.config&&j.config.depts&&j.config.depts.length) CFG=j.config;
+    ADMIN_KEY=$("key").value;
+    if(j.asg){ ASG=j.asg; try{ localStorage.setItem(ASG_KEY,JSON.stringify(ASG)); }catch(e){} }
+    start(j.rows||[], j.config);
+    setSync("배정 시트에서 불러옴");
     try{ sessionStorage.setItem("bjkey",$("key").value); }catch(e){}
-    $("loginCard").style.display="none"; $("dash").style.display="";
-    render();
   }catch(e){ m.innerHTML=`<div class="status bad">${esc(e.message)}</div>`; }
+}
+function start(rows,cfg){
+  ROWS=rows; if(cfg&&cfg.depts&&cfg.depts.length) CFG=cfg;
+  ROWS.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
+  ["loginCard"].forEach(id=>$(id).classList.add("hide"));
+  ["bar","work","kpi","reloadBtn","meetBtn"].forEach(id=>$(id).classList.remove("hide"));
+  render();
 }
 $("loginBtn").onclick=loadAll; $("key").addEventListener("keydown",e=>{ if(e.key==="Enter") loadAll(); });
 $("reloadBtn").onclick=loadAll;
 
-function count(field, list, getter){
-  return list.map(name=>{ const c=[0,0,0]; ROWS.forEach(d=>{ const arr=getter(d)||[]; arr.forEach((v,i)=>{ if(v===name&&i<3) c[i]++; }); }); return [name,...c]; });
+/* ---- 순위·지망 결합 ---- */
+// 우선/차선(담임·비담임)과 지망(1~3)을 묶어 "우1·차2" 표시, 부장은 별도 "부1"
+const prioOf=d=>d.prio||(d.groupRank||[]).find(g=>g==="담임"||g==="비담임")||"";
+function prefs(d, group){
+  const p=prioOf(d);
+  const r= group==="부장" ? 3 : !p ? 0 : group===p ? 1 : 2; if(!r) return [];
+  if(group==="담임") return (d.hrPicks||[]).map((k,i)=>k&&{key:k,rank:r,pick:i+1});
+  if(group==="부장") return (d.headPicks||[]).map((k,i)=>k&&{key:k,rank:r,pick:i+1});
+  return (d.nonPicks||[]).map((p,i)=>p&&p.dept&&{key:p.dept,task:p.task,rank:r,pick:i+1});
 }
-function sumTable(title, rows){
-  return `<tr><th>${title}</th><th>1지망</th><th>2지망</th><th>3지망</th></tr>`+rows.map(r=>`<tr><td class="l">${esc(r[0])}</td><td>${r[1]||""}</td><td>${r[2]||""}</td><td>${r[3]||""}</td></tr>`).join("");
+const score=p=>p.rank===3?p.pick:(p.rank-1)*3+p.pick;
+const band=p=>p.rank===3?(p.pick===1?"c1":p.pick===2?"c2":"c3"):(score(p)<=2?"c1":score(p)<=4?"c2":"c3");
+const chip=p=>`<span class="chip ${band(p)}">${p.rank===1?"우":p.rank===2?"차":"부"}${p.pick}</span>`;
+function columns(group){
+  if(group==="담임") return CFG.grades.slice();
+  if(group==="부장"){ const c=CFG.depts.filter(d=>d.headOpen!==false).map(d=>d.name); ROWS.forEach(d=>(d.headPicks||[]).forEach(k=>{ if(k&&!c.includes(k)) c.push(k); })); return c; }
+  const c=CFG.depts.filter(d=>(d.tasks||[]).length&&d.quota!==0).map(d=>d.name);   // 정원 0명 부서는 칸 숨김 (지망한 교사가 있으면 표시)
+  ROWS.forEach(d=>(d.nonPicks||[]).forEach(p=>{ if(p&&p.dept&&!c.includes(p.dept)) c.push(p.dept); })); return c;
 }
-function render(){
-  ROWS.sort((a,b)=>String(a.name).localeCompare(String(b.name),"ko"));
-  const first=g=>ROWS.filter(d=>(d.groupRank||[])[0]===g).length;
-  $("kpi").innerHTML=`<div>${ROWS.length}<span>제출</span></div><div>${first("담임")}<span>1순위 담임</span></div><div>${first("비담임")}<span>1순위 비담임</span></div><div>${first("부장")}<span>1순위 부장</span></div><div>${ROWS.filter(d=>d.consent!=="동의").length}<span>개인정보 미동의</span></div>`;
-  const np0=d=>{ const p=(d.nonPicks||[])[0]||{}; return p.dept?(p.dept+" – "+(p.task||"")):""; };
-  $("list").innerHTML=`<tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>구분</th><th>업무군 순위</th><th>담임 1지망</th><th>비담임 1지망</th><th>부장 1지망</th><th>제출일시</th><th></th></tr>`+
-    ROWS.map((d,i)=>`<tr><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${esc(d.staff||"")}</td><td>${esc((d.groupRank||[]).join(" > "))}</td><td>${esc((d.hrPicks||[])[0]||"")}</td><td>${esc(np0(d))}</td><td>${esc((d.headPicks||[])[0]||"")}</td><td>${d.submittedAt?new Date(d.submittedAt).toLocaleString("ko-KR"):""}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`).join("");
-  $("all").onchange=e=>document.querySelectorAll(".sel").forEach(c=>c.checked=e.target.checked);
-  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>doPrint([ROWS[+b.dataset.p]]));
-  $("sumGroup").innerHTML=`<tr><th>업무군</th><th>1순위</th><th>2순위</th><th>3순위</th></tr>`+["담임","비담임","부장"].map(g=>{ const c=[0,1,2].map(i=>ROWS.filter(d=>(d.groupRank||[])[i]===g).length); return `<tr><td class="l">${g}</td>${c.map(x=>`<td>${x||""}</td>`).join("")}</tr>`; }).join("");
-  $("sumHead").innerHTML=sumTable("부장 희망 부서",count("h",CFG.depts.map(d=>d.name),d=>d.headPicks));
-  $("sumHR").innerHTML=sumTable("담임 희망 학년",count("g",CFG.grades,d=>d.hrPicks));
-  const nonKeys=[]; CFG.depts.forEach(dp=>(dp.tasks||[]).forEach(t=>nonKeys.push(dp.name+" – "+t)));
-  $("sumNon").innerHTML=sumTable("비담임 희망 업무",count("n",nonKeys,d=>(d.nonPicks||[]).map(p=>p.dept+" – "+p.task)));
-  const T=(CFG.teachers||[]).filter(Boolean);
-  if(!T.length){ $("missing").innerHTML=`<p style="font-size:13px;color:#5f6b66">시트 "설정" 탭의 교사명단(D열)을 채우면 미제출자가 표시됩니다.</p>`; }
-  else { const sub=new Set(ROWS.map(d=>String(d.name).trim())); const miss=T.filter(n=>!sub.has(String(n).trim()));
-    $("missing").innerHTML = miss.length ? `<p>${miss.length}명: ${miss.map(esc).join(", ")}</p>` : `<p>모두 제출했습니다.</p>`; }
+function quota(group,key){
+  if(group==="담임") return (CFG.gradeQuota||{})[key]||0;
+  if(group==="부장") return 1;
+  const d=CFG.depts.find(x=>x.name===key); return d?(d.quota!=null?d.quota:(d.tasks||[]).length):0;
 }
-function doPrint(list){
-  if(!list.length){ alert("출력할 대상을 선택하세요."); return; }
-  injectPrintCss(); $("printArea").innerHTML=list.map(renderForm).join(""); window.print();
+function colStat(group,key){
+  const items=[]; ROWS.forEach(d=>prefs(d,group).forEach(p=>{ if(p&&p.key===key) items.push({d,p}); }));
+  const q=quota(group,key), top=items.filter(x=>score(x.p)<=2).length;
+  const assigned=ROWS.filter(d=>{ const a=ASG[d.name]; return a&&a.group===group&&a.key===key; });
+  const first=items.filter(x=>x.p.rank===1&&x.p.pick===1).length;   // 우1: 우선 희망 1지망
+  return {items,q,top,first,assigned};
 }
-$("printAll").onclick=()=>doPrint(ROWS);
-$("printSel").onclick=()=>doPrint([...document.querySelectorAll(".sel:checked")].map(c=>ROWS[+c.dataset.i]));
+// 전체 자리 수와 우선 희망 인원 비교 (부장 제외)
+function seatGap(group){
+  const seats=columns(group).reduce((a,k)=>a+quota(group,k),0);
+  const want=ROWS.filter(d=>prioOf(d)===group).length;
+  return {seats,want,diff:want-seats};
+}
+const asgLabel=a=>a? (a.group==="비담임"?`${a.key} ${a.task||""}`:a.group==="담임"?`${a.key} 담임`:`${a.key} 부장`) : "";
 
+/* ---- 렌더 ---- */
+function render(){
+  const done=ROWS.filter(d=>ASG[d.name]).length;
+  const gapTxt=g=>{ const x=seatGap(g); return `<span>${g} <b>${x.seats}</b>자리 · 우선 희망 <b>${x.want}</b>명 <em class="gap ${x.diff>0?"over":x.diff<0?"under":""}">${x.diff>0?`${x.diff}명 초과`:x.diff<0?`${-x.diff}자리 남음`:"일치"}</em></span>`; };
+  $("kpi").innerHTML=`<span><b>${ROWS.length}</b>제출</span>${gapTxt("담임")}${gapTxt("비담임")}<span><b>${done}</b>배정</span>`;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===TAB));
+  if(TAB==="list") renderList(); else if(TAB==="miss") renderMissing(); else renderBoard(TAB);
+  renderSide();
+}
+function renderBoard(group){
+  const q=$("q").value.trim(), hide=$("hideTaken").checked;
+  const cols=columns(group).map(key=>{
+    const items=[]; ROWS.forEach(d=>prefs(d,group).forEach(p=>{ if(p&&p.key===key) items.push({d,p}); }));
+    items.sort((a,b)=>score(a.p)-score(b.p)||String(a.d.name).localeCompare(String(b.d.name),"ko"));
+    const st=colStat(group,key), mine=st.assigned;
+    const cards=items.filter(({d})=>{ const a=ASG[d.name]; const isMine=a&&a.group===group&&a.key===key; return !(hide&&a&&!isMine); }).map(({d,p})=>{
+      const a=ASG[d.name], isMine=a&&a.group===group&&a.key===key&&(group!=="비담임"||a.task===p.task);
+      const cls=["cd", isMine?"mine":a?"taken":"", SEL===d.name?"sel":"", q&&String(d.name).includes(q)?"hit":""].join(" ");
+      return `<div class="${cls}" data-n="${esc(d.name)}">${chip(p)}<span class="nm">${esc(d.name)}</span>${p.task?`<span class="tk">${esc(p.task)}</span>`:"<span></span>"}
+        <span class="sub">${esc(d.subject||"")} · 경력 ${esc(d.careerYears||0)}년${d.staff&&d.staff!=="본교"?" · 전입·신규":""}${a&&!isMine?` · ${esc(asgLabel(a))} 배정`:""}</span></div>`;
+    }).join("");
+    return `<div class="col"><h3>${esc(key)}<small>${st.q?`정원 ${st.q} · `:""}우1 ${st.first} · 희망 ${items.length} · 배정 ${mine.length}</small></h3><div class="list">${cards||`<div class="empty">희망자 없음</div>`}</div></div>`;
+  }).join("");
+  $("view").innerHTML=`<div class="board">${cols}</div>`;
+  $("view").querySelectorAll(".cd").forEach(c=>c.onclick=()=>{ SEL=c.dataset.n; render(); });
+}
+function summary(d){ const p=prioOf(d); return p?`${p} 우선`:""; }
+function renderList(){
+  const q=$("q").value.trim();
+  const rows=ROWS.filter(d=>!q||String(d.name).includes(q));
+  $("view").innerHTML=`<div class="bar" style="border-bottom:none;background:transparent"><button class="btn primary" id="printAll">전체 출력</button><button class="btn primary" id="printSel">선택 출력</button><span class="muted" style="font-size:12.5px;color:var(--muted)">1인당 A4 1쪽 · 인쇄 창에서 "머리글과 바닥글" 끄기</span></div>
+  <div class="tablewrap"><table class="t"><thead><tr><th><input type="checkbox" id="all"></th><th>성명</th><th>교과</th><th>구분</th><th>경력</th><th>우선 희망</th><th>담임 지망</th><th>비담임 지망</th><th>부장 지망</th><th>배정</th><th></th></tr></thead><tbody>`+
+  rows.map(d=>{ const i=ROWS.indexOf(d);
+    return `<tr data-n="${esc(d.name)}"><td><input type="checkbox" class="sel" data-i="${i}"></td><td>${esc(d.name)}</td><td>${esc(d.subject)}</td><td>${d.staff==="본교"?"본교":"전입·신규"}</td><td>${esc(d.careerYears||0)}년</td><td>${esc(summary(d))}</td>
+    <td class="l">${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td class="l">${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(p.dept+" "+p.task)).join(" › ")}</td><td class="l">${(d.headPicks||[]).filter(Boolean).map(esc).join(" › ")||"-"}</td>
+    <td>${esc(asgLabel(ASG[d.name]))}</td><td><button class="btn" data-p="${i}">출력</button></td></tr>`; }).join("")+`</tbody></table></div>`;
+  $("all").onchange=e=>document.querySelectorAll(".sel").forEach(c=>c.checked=e.target.checked);
+  $("view").querySelectorAll("[data-p]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); doPrint([ROWS[+b.dataset.p]]); });
+  $("view").querySelectorAll(".sel").forEach(c=>c.onclick=e=>e.stopPropagation());
+  $("view").querySelectorAll("tbody tr").forEach(tr=>tr.onclick=()=>{ SEL=tr.dataset.n; renderSide(); });
+  $("printAll").onclick=()=>doPrint(ROWS);
+  $("printSel").onclick=()=>doPrint([...document.querySelectorAll(".sel:checked")].map(c=>ROWS[+c.dataset.i]));
+}
+function renderMissing(){
+  const T=(CFG.teachers||[]).filter(Boolean);
+  let html;
+  if(!T.length) html=`<p>시트 "설정" 탭의 교사명단(D열)을 채우면 미제출자가 표시됩니다.</p>`;
+  else { const sub=new Set(ROWS.map(d=>String(d.name).trim())); const miss=T.filter(n=>!sub.has(String(n).trim()));
+    html = miss.length ? `<p><b>${miss.length}명</b> 미제출</p><p style="line-height:2">${miss.map(esc).join(", ")}</p>` : `<p>모두 제출했습니다.</p>`; }
+  $("view").innerHTML=`<div class="tablewrap">${html}</div>`;
+}
+function renderSide(){
+  const s=$("side"), d=ROWS.find(x=>x.name===SEL);
+  if(!d){ s.classList.add("hide"); return; }
+  s.classList.remove("hide");
+  const a=ASG[d.name];
+  const pv=d.prev||{};
+  const line=g=>{ const ps=prefs(d,g).filter(Boolean); const pr=prioOf(d); const lab=g==="부장"?(ps.length?"희망":"비희망"):g===pr?"우선":"차선";
+    return `<span class="chip ${lab==="우선"||lab==="희망"?"c1":lab==="차선"?"c2":"c3"}">${lab}</span><span><b>${g}</b> ${ps.map(p=>esc(p.key+(p.task?" "+p.task:""))).join(" › ")||"지망 없음"}</span>`; };
+  const opts=[];
+  ["담임","비담임"].forEach(g=>prefs(d,g).forEach(p=>{ if(p) opts.push({group:g,key:p.key,task:p.task||"",p}); }));
+  s.innerHTML=`<button class="close" id="closeSide" title="닫기">×</button>
+   <h2>${esc(d.name)}</h2><div class="muted">${esc(d.subject||"")} · ${d.staff==="본교"?"본교 재직":"전입·신규"} · 교육경력 ${esc(d.careerYears||0)}년</div>
+   <dl><dt>2026 근무</dt><dd>${esc(pv.school||"")} ${esc(pv.task||d.cur||"")}</dd>
+   <dt>업무 경력</dt><dd>${esc(d.career||"")}</dd>
+   <dt>담임 경력</dt><dd>${(+d.hrMid===0&&+d.hrHigh===0)?"없음":`중 ${esc(d.hrMid)}년 · 고 ${esc(d.hrHigh)}년`}</dd>
+   <dt>본교 발령</dt><dd>${esc(d.arrivalDate||"")}</dd></dl>
+   <h4>우선 희망과 지망</h4><div class="prefs">${["담임","비담임","부장"].map(line).join("")}</div>
+   ${d.reason?`<h4>희망 사유 및 참고사항</h4><div style="font-size:13px;white-space:pre-wrap">${esc(d.reason)}</div>`:""}
+   <h4>배정 ${a?`<span style="color:var(--done)">— ${esc(asgLabel(a))}</span>`:""}</h4>
+   <div class="asg">${opts.map((o,i)=>`<button class="btn ${a&&a.group===o.group&&a.key===o.key&&(a.task||"")===o.task?"on":""}" data-o="${i}">${chip(o.p)} ${esc(o.key+(o.task?" "+o.task:"")+(o.group==="담임"?" 담임":o.group==="부장"?" 부장":""))}</button>`).join("")}
+   ${a?`<button class="btn" id="unasg">배정 취소</button>`:""}</div>
+   <p class="muted" style="margin-top:8px">배정은 시트 "배정" 탭에 자동 저장되어 학교 PC 등 다른 컴퓨터에서도 이어서 볼 수 있습니다.</p>
+   <button class="btn" id="printOne" style="margin-top:6px">이 교사 조사서 출력</button>`;
+  $("closeSide").onclick=()=>{ SEL=null; render(); };
+  s.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{ const o=opts[+b.dataset.o]; ASG[d.name]={group:o.group,key:o.key,task:o.task}; saveAsg(); render(); });
+  if(a) $("unasg").onclick=()=>{ delete ASG[d.name]; saveAsg(); render(); };
+  $("printOne").onclick=()=>doPrint([d]);
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{ TAB=b.dataset.t; render(); });
+$("q").addEventListener("input",render); $("hideTaken").addEventListener("change",render);
+
+function meetingHTML(){
+  const groups=[["담임","담임"],["비담임","비담임"]];
+  const tier=(it,f)=>it.filter(x=>f(score(x.p),x.p)).map(x=>esc(x.d.name)+(x.p.task?`(${esc(x.p.task)})`:"")).join(", ");
+  let n=0;
+  const rows=groups.map(([g,lab])=>columns(g).map(key=>{
+    const st=colStat(g,key); const it=st.items.sort((a,b)=>score(a.p)-score(b.p));
+    const tA=g==="부장"?tier(it,(s,p)=>p.pick===1):tier(it,s=>s<=2), tB=g==="부장"?tier(it,(s,p)=>p.pick===2):tier(it,s=>s>=3&&s<=4), tC=g==="부장"?tier(it,(s,p)=>p.pick===3):tier(it,s=>s>=5);
+    return `<tr><td>${esc(key)}${g==="담임"?" 담임":g==="부장"?" 부장":""}</td><td class="c">${st.q||""}</td><td>${tA}</td><td>${tB}</td><td>${tC}</td><td>${st.assigned.map(d=>esc(d.name)+(ASG[d.name].task?`(${esc(ASG[d.name].task)})`:"")).join(", ")}</td><td class="c">${st.first} / ${st.q||"-"}</td></tr>`;
+  }).join("")).join("");
+  const T=ROWS.map(d=>{ n++; const a=ASG[d.name];
+    return `<tr><td class="c">${n}</td><td>${esc(d.name)}</td><td class="c">${esc(d.subject||"")}</td><td class="c">${d.staff==="본교"?"본교":"전입·신규"}</td><td class="c">${esc(d.careerYears||0)}</td><td class="c">${esc(prioOf(d))}</td>
+    <td>${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td>${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(p.dept+" "+p.task)).join(" › ")}</td><td>${esc(d.career||"")}</td><td>${esc(asgLabel(a))}</td></tr>`; }).join("");
+  const today=new Date().toLocaleDateString("ko-KR");
+  return `<div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 자리별</h2><p class="mtm">${today} · 제출 ${ROWS.length}명 · ${["담임","비담임"].map(g=>{ const x=seatGap(g); return `${g} ${x.seats}자리, 우선 희망 ${x.want}명(${x.diff>0?x.diff+"명 초과":x.diff<0?(-x.diff)+"자리 남음":"일치"})`; }).join(" · ")} · 우1·우2 = 우선 희망 1·2지망, 우3·차1 = 중간, 차2·차3 = 낮음 · 부장 제외</p>
+  <table><thead><tr><th style="width:13%">자리</th><th style="width:5%">정원</th><th>우1·우2</th><th>우3·차1</th><th>차2·차3</th><th style="width:15%">1차안</th><th style="width:7%">우1 / 정원</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 교사별</h2><p class="mtm">${today} · 개인정보(주소·연락처·생년월일)와 희망 사유는 포함하지 않았습니다. 회의 후 회수합니다.</p>
+  <table><thead><tr><th>번호</th><th>성명</th><th>교과</th><th>구분</th><th>경력</th><th>우선</th><th>담임 지망</th><th>비담임 지망</th><th>업무 경력</th><th>1차안</th></tr></thead><tbody>${T}</tbody></table></div>`;
+}
+const MEET_CSS=`@page{size:A4 landscape;margin:10mm}
+.mt{font-family:"Noto Sans KR","Malgun Gothic",sans-serif;color:#000;break-after:page}
+.mt:last-child{break-after:auto}
+.mt h2{font-size:15px;margin:0 0 3px}.mtm{font-size:10px;margin:0 0 6px;color:#333}
+.mt table{border-collapse:collapse;width:100%;font-size:10px}
+.mt th,.mt td{border:1px solid #555;padding:3px 4px;vertical-align:top;word-break:keep-all}
+.mt th{background:#e6e6e6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.mt td.c{text-align:center}.mt tr{break-inside:avoid}`;
+function printMeeting(){
+  let st=document.getElementById("meetcss"); if(!st){ st=document.createElement("style"); st.id="meetcss"; document.head.appendChild(st); }
+  st.textContent=MEET_CSS; const pf=document.getElementById("pfcss"); if(pf) pf.disabled=true;
+  $("printArea").innerHTML=meetingHTML(); window.print();
+  setTimeout(()=>{ st.textContent=""; if(pf) pf.disabled=false; },500);
+}
+$("meetBtn").onclick=printMeeting;
+function doPrint(list){
+  if(!list.length) return;
+  const ms=document.getElementById("meetcss"); if(ms) ms.textContent="";
+  injectPrintCss(); const pf=document.getElementById("pfcss"); if(pf) pf.disabled=false;
+  $("printArea").innerHTML=list.map(renderForm).join(""); window.print();
+}
 try{ const k=sessionStorage.getItem("bjkey"); if(k){ $("key").value=k; loadAll(); } }catch(e){}
 </script>
 </body>

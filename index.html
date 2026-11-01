@@ -122,9 +122,9 @@ input::placeholder,textarea::placeholder{color:#9aa5a0}
 
 <section class="card">
   <h2>6. 2027학년도 희망 업무</h2>
-  <div class="q">① 업무군 희망 순위 <i class="req">*</i></div>
-  <p class="note" style="margin:0 0 6px" id="rankNote">담임, 비담임(부서 업무), 부장을 희망하는 순서대로 선택하세요.</p>
-  <div id="groupRank" class="picks"></div>
+  <p class="note" style="margin:0 0 10px">담임과 비담임 중 우선 희망하는 쪽을 선택하고, 각각 1~3지망을 기재해 주세요(필수 6개). 부장은 희망 여부를 선택하고, 희망하는 경우 1~3지망을 추가로 기재합니다(최대 9개).</p>
+  <div class="q">① 우선 희망 <i class="req">*</i></div>
+  <div class="ox" data-ox="prio"><button data-v="담임">담임 우선</button><button data-v="비담임">비담임 우선</button></div>
 
   <div class="q">② 담임 — 희망 학년 <i class="req">*</i></div>
   <div id="hrPicks" class="picks"></div>
@@ -133,10 +133,11 @@ input::placeholder,textarea::placeholder{color:#9aa5a0}
   <div id="nonPicks" class="picks"></div>
 
   <div id="headBlock">
-  <div class="q">④ 부장 — 희망 부서 <span class="note">(선택 사항)</span></div>
-  <div id="headPicks" class="picks"></div>
+  <div class="q">④ 부장 희망 여부 <i class="req">*</i> <span class="note" id="headNote"></span></div>
+  <div class="ox" data-ox="wantHead"><button data-v="희망">희망</button><button data-v="비희망">비희망</button></div>
+  <div id="headPicks" class="picks hide"></div>
   </div>
-  <p class="note">※ 담임과 비담임의 1, 2, 3지망은 빠짐없이 기재해야 제출됩니다. 부장 희망 부서는 희망하는 경우에만 선택하세요. 각 지망은 서로 다른 부서(학년)로 선택하고, 업무는 배부된 업무분장표를 참고하세요.</p>
+  <p class="note">※ 각 지망은 서로 다른 부서(학년)로 선택하고, 업무는 배부된 업무분장표를 참고하세요.</p>
 </section>
 
 <section class="card">
@@ -179,23 +180,18 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvoRVrXyop4TdKpcuzu
 let CFG = DEFAULT_CONFIG;
 
 const $ = id => document.getElementById(id);
-const S = { staff:"", groupRank:["","",""], consent:"", heads:[], headPicks:["","",""], hrPicks:["","",""], nonPicks:[{dept:"",task:""},{dept:"",task:""},{dept:"",task:""}] };
+const S = { staff:"", prio:"", wantHead:"", consent:"", heads:[], headPicks:["","",""], hrPicks:["","",""], nonPicks:[{dept:"",task:""},{dept:"",task:""},{dept:"",task:""}] };
 const TEXT = ["name","birth","license","subject","address","phone","careerYears","arrivalDate","career","pSchool","pTask","hrMid","hrHigh","reason"];
 
 const headDepts = () => CFG.depts.map(d=>d.name);
-const nonDepts = () => CFG.depts.filter(d=>d.tasks && d.tasks.length);
+const nonDepts = () => CFG.depts.filter(d=>d.tasks && d.tasks.length && d.quota!==0);   // 비담임 정원 0명 부서는 지망 목록에서 제외
 function opt(list, val, ph){ return `<option value="">${ph}</option>` + list.map(v=>`<option${v===val?" selected":""}>${esc(v)}</option>`).join(""); }
 
 
 const openHeads = () => CFG.depts.filter(d=>d.headOpen!==false).map(d=>d.name);   // 부장 모집 부서 (설정 탭 C열)
 const headN = () => Math.min(3, openHeads().length);                                 // 부장 지망 개수 (모집 부서 수에 따라 0~3)
 const headOn = () => !!S.staff && headN()>0;
-const groups = () => headOn() ? ["담임","비담임","부장"] : ["담임","비담임"];
 function renderPicks(){
-  const gr=$("groupRank"); gr.innerHTML="";
-  groups().forEach((_,i)=>{ const r=document.createElement("div"); r.className="pickrow one";
-    r.innerHTML=`<span>${i+1}순위</span><select>${opt(groups(),S.groupRank[i],"업무군 선택")}</select>`;
-    r.children[1].onchange=e=>{S.groupRank[i]=e.target.value; update();}; gr.appendChild(r); });
   S.headPicks=S.headPicks.map(v=>openHeads().includes(v)?v:"");
   const hp=$("headPicks"); hp.innerHTML="";
   S.headPicks.slice(0,headN()).forEach((v,i)=>{ const r=document.createElement("div"); r.className="pickrow one";
@@ -216,7 +212,7 @@ function renderPicks(){
 
 document.querySelectorAll("[data-ox]").forEach(g=>{
   const key=g.dataset.ox;
-  g.querySelectorAll("button").forEach(b=>b.onclick=()=>{ S[key]=b.dataset.v; if(key==="staff"){ S.groupRank=["","",""]; $("noSchool").checked=false; $("arrivalDate").value = S.staff==="전입·신규" ? `${YEAR}-03-01` : ""; renderPicks(); } update(); });
+  g.querySelectorAll("button").forEach(b=>b.onclick=()=>{ S[key]=b.dataset.v; if(key==="staff"){ $("noSchool").checked=false; $("arrivalDate").value = S.staff==="전입·신규" ? `${YEAR}-03-01` : ""; renderPicks(); } update(); });
 });
 
 function collect(){
@@ -230,9 +226,9 @@ function collect(){
   return { name:d.name, birth:d.birth, license:d.license, subject:d.subject, address:d.address, phone:d.phone,
     careerYears:d.careerYears, arrivalDate:d.arrivalDate, cur:task, prev, staff:S.staff, transfer:t,
     career:$("noCareer").checked?"없음":d.career, heads:[], hrMid:$("noHR").checked?"0":d.hrMid, hrHigh:$("noHR").checked?"0":d.hrHigh,
-    groupRank:S.groupRank.slice(0,groups().length),
+    prio:S.prio, groupRank:S.prio?[S.prio, S.prio==="담임"?"비담임":"담임"]:[],
     hrPicks:S.hrPicks.slice(), nonPicks:S.nonPicks.map(p=>({...p})),
-    headPicks:headOn()?S.headPicks.slice(0,headN()):[], headClosed:!!S.staff&&!headOn(),
+    wantHead:headOn()?S.wantHead:"", headPicks:headOn()&&S.wantHead==="희망"?S.headPicks.slice(0,headN()):[], headClosed:!!S.staff&&!headOn(),
     reason:d.reason, consent:S.consent };
 }
 
@@ -250,14 +246,16 @@ function validate(d){
   if(!d.career) E.push("업무 경력을 입력하세요. (없으면 '업무 경력 없음' 체크)");
   if(d.hrMid===""||d.hrHigh==="") E.push("담임 경력(중학교, 고등학교)을 입력하세요. (없으면 '담임 경력 없음' 체크, 한쪽만 없으면 0)");
   if(S.staff){
-    if(d.groupRank.some(v=>!v)) E.push("업무군 희망 순위를 모두 선택하세요.");
-    else if(new Set(d.groupRank).size<d.groupRank.length) E.push("업무군 희망 순위는 서로 다른 업무군으로 선택하세요.");
+    if(!S.prio) E.push("담임과 비담임 중 우선 희망을 선택하세요.");
   }
   const chk3=(arr,label,unit)=>{ const n=arr.length, rng=n>1?`1~${n}지망`:"1지망"; if(arr.some(v=>!v)) E.push(`${label} ${rng}을 모두 선택하세요.`); else if(new Set(arr).size<n) E.push(`${label} ${rng}은 서로 다른 ${unit}로 선택하세요.`); };
   chk3(d.hrPicks,"담임 희망 학년","학년");
   if(d.nonPicks.some(p=>!p.dept||!p.task)) E.push("비담임 희망 부서 및 업무 1~3지망을 모두 선택하세요.");
   else if(new Set(d.nonPicks.map(p=>p.dept)).size<3) E.push("비담임 희망 1~3지망은 서로 다른 부서로 선택하세요.");
-  if(headOn()){ const hp=d.headPicks.filter(Boolean); if(new Set(hp).size<hp.length) E.push("부장 희망 부서는 서로 다른 부서로 선택하세요."); }
+  if(headOn()){
+    if(!S.wantHead) E.push("부장 희망 여부를 선택하세요.");
+    else if(S.wantHead==="희망"){ const hp=d.headPicks.filter(Boolean); if(!hp.length) E.push("부장 희망 부서를 1지망 이상 선택하세요."); else if(new Set(hp).size<hp.length) E.push("부장 희망 부서는 서로 다른 부서로 선택하세요."); }
+  }
   if(!d.consent) E.push("개인정보 수집·이용 동의 여부를 선택하세요.");
   return E;
 }
@@ -265,9 +263,8 @@ function validate(d){
 function update(){
   document.querySelectorAll("[data-ox]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on", S[g.dataset.ox]===b.dataset.v)));
   $("headBlock").classList.toggle("hide", !headOn());
-  $("rankNote").textContent = !headOn()
-    ? "담임과 비담임(부서 업무)을 희망하는 순서대로 선택하세요." + (S.staff ? " (부장은 모집 중인 부서가 없어 제외)" : "")
-    : "담임, 비담임(부서 업무), 부장을 희망하는 순서대로 선택하세요." + (headN()<3 ? ` (부장은 모집 중인 ${openHeads().join(", ")}만 선택)` : "");
+  $("headNote").textContent = headN()<3 ? `(모집 중: ${openHeads().join(", ")})` : "";
+  $("headPicks").classList.toggle("hide", S.wantHead!=="희망");
   $("staffNeed").classList.toggle("hide", !!S.staff); $("prevWrap").classList.toggle("hide", !S.staff); $("careerWrap").classList.toggle("hide",$("noCareer").checked); $("hrWrap").classList.toggle("hide",$("noHR").checked);
   const isN=S.staff==="전입·신규", none=isN&&$("noSchool").checked;
   $("noSchoolWrap").classList.toggle("hide", !isN); $("pSchoolWrap").classList.toggle("hide", none); $("pTask").closest("label").classList.toggle("hide", none);
@@ -280,7 +277,7 @@ function update(){
 /* 임시 저장 (이 기기 브라우저에만) */
 const KEY="okbit-bunjang-2027";
 function save(){ try{ const o={S,noSchool:$("noSchool").checked,noCareer:$("noCareer").checked,noHR:$("noHR").checked}; TEXT.forEach(k=>o[k]=$(k).value); localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} }
-function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return; TEXT.forEach(k=>{ if(typeof o[k]==="string") $(k).value=o[k]; }); if(o.S) Object.assign(S,o.S); $("noSchool").checked=!!o.noSchool; $("noCareer").checked=!!o.noCareer; $("noHR").checked=!!o.noHR; if(S.staff==="전입"||S.staff==="신규") S.staff="전입·신규"; }catch(e){} }
+function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||"null"); if(!o) return; TEXT.forEach(k=>{ if(typeof o[k]==="string") $(k).value=o[k]; }); if(o.S) Object.assign(S,o.S); delete S.groupRank; $("noSchool").checked=!!o.noSchool; $("noCareer").checked=!!o.noCareer; $("noHR").checked=!!o.noHR; if(S.staff==="전입"||S.staff==="신규") S.staff="전입·신규"; }catch(e){} }
 
 document.querySelectorAll("input,select,textarea").forEach(el=>{ el.addEventListener("input",update); el.addEventListener("change",update); });
 $("resetBtn").onclick=()=>{ if(!confirm("입력한 내용을 모두 지울까요? (이미 제출한 내용은 그대로 남습니다)")) return; try{localStorage.removeItem(KEY);}catch(e){} location.reload(); };
