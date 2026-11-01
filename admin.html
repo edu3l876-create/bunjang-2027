@@ -116,7 +116,7 @@ table.t tr:hover td{background:#f6faf8;cursor:pointer}
 <div id="printArea"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvoRVrXyop4TdKpcuzuBneHOuzus4LssLSdLiSbSUw-C548BdjmxkFkJYlR9gKyB0/exec";   // index.html과 같은 Apps Script 웹앱 주소
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHsgcBl6ZtObX5UsO5NZo6leDJE1__ux16BGk3gyMosW4tHX2DXXuNw0nrYsZreit8/exec";   // index.html과 같은 Apps Script 웹앱 주소
 const $=id=>document.getElementById(id);
 let ROWS=[], CFG=DEFAULT_CONFIG, TAB="담임", SEL=null;
 const ASG_KEY="okbit-bunjang-2027-asg";
@@ -179,7 +179,12 @@ function columns(group){
 function quota(group,key){
   if(group==="담임") return (CFG.gradeQuota||{})[key]||0;
   if(group==="부장") return 1;
-  const d=CFG.depts.find(x=>x.name===key); return d?(d.quota!=null?d.quota:(d.tasks||[]).length):0;
+  const d=CFG.depts.find(x=>x.name===key); return d&&d.quota!=null?d.quota:0;
+}
+// 설정 탭에 정원을 안 넣은 칸 (담임: G열 비었거나 0, 비담임: E열 비어 있음)
+function quotaMissing(group){
+  if(group==="담임") return columns(group).filter(k=>!(CFG.gradeQuota||{})[k]);
+  return columns(group).filter(k=>{ const d=CFG.depts.find(x=>x.name===k); return !d||d.quota==null; });
 }
 function colStat(group,key){
   const items=[]; ROWS.forEach(d=>prefs(d,group).forEach(p=>{ if(p&&p.key===key) items.push({d,p}); }));
@@ -192,14 +197,14 @@ function colStat(group,key){
 function seatGap(group){
   const seats=columns(group).reduce((a,k)=>a+quota(group,k),0);
   const want=ROWS.filter(d=>prioOf(d)===group).length;
-  return {seats,want,diff:want-seats};
+  return {seats,want,diff:want-seats,missing:quotaMissing(group)};
 }
 const asgLabel=a=>a? (a.group==="비담임"?`${a.key} ${a.task||""}`:a.group==="담임"?`${a.key} 담임`:`${a.key} 부장`) : "";
 
 /* ---- 렌더 ---- */
 function render(){
   const done=ROWS.filter(d=>ASG[d.name]).length;
-  const gapTxt=g=>{ const x=seatGap(g); return `<span>${g} <b>${x.seats}</b>자리 · 우선 희망 <b>${x.want}</b>명 <em class="gap ${x.diff>0?"over":x.diff<0?"under":""}">${x.diff>0?`${x.diff}명 초과`:x.diff<0?`${-x.diff}자리 남음`:"일치"}</em></span>`; };
+  const gapTxt=g=>{ const x=seatGap(g); if(x.missing.length) return `<span>${g} 우선 희망 <b>${x.want}</b>명 <em class="gap over" title="설정 탭 ${g==="담임"?"G열":"E열"}: ${x.missing.join(", ")}">정원 미입력</em></span>`; return `<span>${g} <b>${x.seats}</b>자리 · 우선 희망 <b>${x.want}</b>명 <em class="gap ${x.diff>0?"over":x.diff<0?"under":""}">${x.diff>0?`${x.diff}명 초과`:x.diff<0?`${-x.diff}자리 남음`:"일치"}</em></span>`; };
   $("kpi").innerHTML=`<span><b>${ROWS.length}</b>제출</span>${gapTxt("담임")}${gapTxt("비담임")}<span><b>${done}</b>배정</span>`;
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===TAB));
   if(TAB==="list") renderList(); else if(TAB==="miss") renderMissing(); else renderBoard(TAB);
@@ -291,7 +296,7 @@ function meetingHTML(){
     return `<tr><td class="c">${n}</td><td>${esc(d.name)}</td><td class="c">${esc(d.subject||"")}</td><td class="c">${d.staff==="본교"?"본교":"전입·신규"}</td><td class="c">${esc(d.careerYears||0)}</td><td class="c">${esc(prioOf(d))}</td>
     <td>${(d.hrPicks||[]).filter(Boolean).map(esc).join(" › ")}</td><td>${(d.nonPicks||[]).filter(p=>p&&p.dept).map(p=>esc(p.dept+" "+p.task)).join(" › ")}</td><td>${esc(d.career||"")}</td><td>${esc(asgLabel(a))}</td></tr>`; }).join("");
   const today=new Date().toLocaleDateString("ko-KR");
-  return `<div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 자리별</h2><p class="mtm">${today} · 제출 ${ROWS.length}명 · ${["담임","비담임"].map(g=>{ const x=seatGap(g); return `${g} ${x.seats}자리, 우선 희망 ${x.want}명(${x.diff>0?x.diff+"명 초과":x.diff<0?(-x.diff)+"자리 남음":"일치"})`; }).join(" · ")} · 우1·우2 = 우선 희망 1·2지망, 우3·차1 = 중간, 차2·차3 = 낮음 · 부장 제외</p>
+  return `<div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 자리별</h2><p class="mtm">${today} · 제출 ${ROWS.length}명 · ${["담임","비담임"].map(g=>{ const x=seatGap(g); return x.missing.length?`${g} 정원 미입력, 우선 희망 ${x.want}명`:`${g} ${x.seats}자리, 우선 희망 ${x.want}명(${x.diff>0?x.diff+"명 초과":x.diff<0?(-x.diff)+"자리 남음":"일치"})`; }).join(" · ")} · 우1·우2 = 우선 희망 1·2지망, 우3·차1 = 중간, 차2·차3 = 낮음 · 부장 제외</p>
   <table><thead><tr><th style="width:13%">자리</th><th style="width:5%">정원</th><th>우1·우2</th><th>우3·차1</th><th>차2·차3</th><th style="width:15%">1차안</th><th style="width:7%">우1 / 정원</th></tr></thead><tbody>${rows}</tbody></table></div>
   <div class="mt"><h2>${YEAR}학년도 담임 및 업무분장 희망 현황 — 교사별</h2><p class="mtm">${today} · 개인정보(주소·연락처·생년월일)와 희망 사유는 포함하지 않았습니다. 회의 후 회수합니다.</p>
   <table><thead><tr><th>번호</th><th>성명</th><th>교과</th><th>구분</th><th>경력</th><th>우선</th><th>담임 지망</th><th>비담임 지망</th><th>업무 경력</th><th>1차안</th></tr></thead><tbody>${T}</tbody></table></div>`;
